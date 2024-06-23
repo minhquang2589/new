@@ -18,11 +18,9 @@ return new class extends Migration
             $table->bigInteger('price');
             $table->string('class', 100);
             $table->unsignedBigInteger('cate_id');
-            $table->unsignedBigInteger('detail_id');
             $table->unsignedBigInteger('sales_count')->default(0);
             $table->boolean('is_new')->default(false);
             $table->foreign('cate_id')->references('id')->on('product_cates')->onDelete('cascade');
-            $table->foreign('detail_id')->references('id')->on('product_details')->onDelete('cascade');
             $table->timestamps();
         });
     }

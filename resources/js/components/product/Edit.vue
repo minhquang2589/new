@@ -1,157 +1,97 @@
 <template>
     <Dashboard page-title="Product - Edit">
-        <form @submit.prevent="productEdit">
+        <form
+            class="max-w-md px-3 lg:px-0 mx-auto"
+            @submit.prevent="productEdit"
+        >
+            <span class="underline text-red-500 hover:cursor-pointer">
+                <p @click="deleteProduct">Delete product</p>
+            </span>
+            <div class="z-0 mb-5 mt-4 group">
+                <div class="grid gap-1 grid-cols-3">
+                    <div
+                        v-for="(item, index) in productImage"
+                        :key="index"
+                        class="mr-2"
+                    >
+                        <img
+                            class="size-28"
+                            :src="getImageSrc(item.image)"
+                            :alt="`Image ${index + 1}`"
+                        />
+                    </div>
+                </div>
+                <div class="my-5">
+                    <button
+                        type="button"
+                        @click="triggerFileInput"
+                        class="underline hover:text-blue-600"
+                    >
+                        Change
+                    </button>
+                    <input
+                        ref="fileInput"
+                        @change="handleImageUpload"
+                        class="hidden"
+                        type="file"
+                        id="image-input"
+                        name="images[]"
+                        multiple
+                    />
+                </div>
+            </div>
             <div class="relative z-0 mb-5 mt-4 group">
                 <input
                     type="text"
                     name="product_name"
                     id="product_name"
                     v-model="product_name"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder="Product name"
+                    class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                 />
-                <label
-                    for="product_name"
-                    name="product_name"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >Product Name</label
-                >
-            </div>
-            <div class="relative z-0 w-full mb-2 group">
                 <input
                     require
                     type="text"
                     name="price"
                     id="price"
                     v-model="price"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder="Price"
+                    @blur="formatPrice"
+                    @input="formatPrice"
+                    class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                 />
-                <label
-                    for="price"
-                    name="price"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >Price</label
-                >
             </div>
-            <div class="relative z-0 w-full mt-4 mb-5 group">
-                <input
-                    type="text"
-                    name="detail1"
-                    id="detail1"
-                    v-model="detail1"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                />
-                <label
-                    for="detail1"
-                    name="detail1"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >miêu tả</label
-                >
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input
-                    type="text"
-                    name="detail2"
-                    id="detail2"
-                    v-model="detail2"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                />
-                <label
-                    for="detail2"
-                    name="detail2"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >đặc điểm 1</label
-                >
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input
-                    type="text"
-                    name="detail3"
-                    id="detail3"
-                    v-model="detail3"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                />
-                <label
-                    for="detail3"
-                    name="detail3"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >đặc điểm 2</label
-                >
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input
-                    type="text"
-                    name="detail4"
-                    id="detail4"
-                    v-model="detail4"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                />
-                <label
-                    for="detail4"
-                    name="detail4"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >đặc điểm 3</label
-                >
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input
-                    type="text"
-                    name="detail5"
-                    id="detail5"
-                    v-model="detail5"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                />
-                <label
-                    for="detail5"
-                    name="detail5"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >đặc điểm 4
-                </label>
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input
-                    type="text"
-                    name="detail6"
-                    id="detail6"
-                    v-model="detail6"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                />
-                <label
-                    for="detail6"
-                    name="detail6"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >đặc điểm 5</label
-                >
-            </div>
-            <div class="form-group flex">
-                <label>
-                    <input
-                        class="size-4 rounded border-gray-300"
-                        type="checkbox"
-                        name="is_new"
-                        v-model="is_new"
-                        :checked="is_new === 1"
-                    />
-                    <span class="text-red-600 ml-3"><strong>New</strong></span>
-                </label>
-            </div>
+
             <div class="mt-4">
                 <div class="w-full mr-5">
-                    <div class="">
-                        <select
-                            id="gender"
-                            for="gender"
-                            name="gender"
-                            v-model="gender"
-                            class="block w-full px-3 sm:px-3 lg:px-5 pt-2 pb-1 text-sm text-grey-darker border border-grey-lighter rounded focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        >
-                            <option hidden selected disabled>
-                                Choose a gender
-                            </option>
-                            <option for="gender" value="Men">Men</option>
-                            <option for="gender" value="Women">Women</option>
-                            <option for="gender" value="Unisex">Unisex</option>
-                        </select>
-                    </div>
+                    <select
+                        id="gender"
+                        for="gender"
+                        name="gender"
+                        v-model="gender"
+                        class="block w-full px-3 sm:px-3 lg:px-5 pt-2 pb-1 text-sm text-grey-darker border border-grey-lighter rounded focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    >
+                        <option hidden selected disabled>
+                            Choose a gender
+                        </option>
+                        <option for="gender" value="Men">Men</option>
+                        <option for="gender" value="Women">Women</option>
+                        <option for="gender" value="Unisex">Unisex</option>
+                    </select>
+                    <select
+                        id="class"
+                        for="class"
+                        name="class"
+                        v-model="class"
+                        class="block w-full mt-2 px-3 sm:px-3 lg:px-5 pt-2 pb-1 text-sm text-grey-darker border border-grey-lighter rounded focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    >
+                        <option hidden selected disabled>Choose a class</option>
+                        <option for="class" value="clothes">clothes</option>
+                        <option for="class" value="bag">bag</option>
+                        <option for="class" value="hat">hat</option>
+                        <option for="class" value="shoe">shoe</option>
+                        <option for="class" value="accessory">accessory</option>
+                    </select>
                 </div>
             </div>
             <div class="mt-2">
@@ -175,72 +115,146 @@
                     v-model="end_datetime"
                 />
                 <br />
-                <div class="flex my-3">
+                <div class="grid gap-1 mt-3 grid-cols-2">
+                    <div>
+                        <label
+                            for="color"
+                            class="block text-xs font-medium text-gray-700"
+                        >
+                            Discount
+                        </label>
+                        <input
+                            type="number"
+                            v-model="discountnumber"
+                            name="discountnumber"
+                            placeholder="Discount %"
+                            min="1"
+                            max="100"
+                            oninput="validity.valid||(value='');"
+                            class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            for="color"
+                            class="block text-xs font-medium text-gray-700"
+                        >
+                            Quantity
+                        </label>
+                        <input
+                            type="number"
+                            name="discountquantity"
+                            placeholder="Discount Quantity"
+                            min="0"
+                            v-model="discountquantity"
+                            oninput="validity.valid||(value='');"
+                            class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                        />
+                    </div>
+                </div>
+                <div class="relative z-0 mb-5 group">
+                    <label
+                        for="color"
+                        class="block text-xs font-medium text-gray-700"
+                    >
+                        Discount Remaining
+                    </label>
                     <input
                         type="number"
-                        name="discountnumber"
-                        placeholder="Discount %"
-                        min="1"
-                        max="100"
-                        v-model="discountnumber"
-                        oninput="validity.valid||(value='');"
-                        class="w-2/3 px-3 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600"
-                    />
-                    |
-                    <input
-                        type="number"
-                        name="discountquantity"
-                        placeholder="Discount Quantity"
+                        name="discountremaining"
+                        placeholder="Discount remaining"
                         min="0"
-                        v-model="discountquantity"
+                        v-model="discountremaining"
                         oninput="validity.valid||(value='');"
-                        class="w-2/3 px-3 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600"
+                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
                     />
                 </div>
             </div>
-            <div class="max-w-lg">
-                <label
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    for="image"
-                    >Images</label
-                >
+
+            <div
+                class="relative z-0 w-full mb-2 mt-3 group"
+                v-for="(detail, index) in details"
+                :key="index"
+            >
                 <input
-                    require
-                    class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                    aria-describedby="images"
-                    for="images"
-                    type="file"
-                    id="image-input"
-                    name="images[]"
-                    multiple
-                    @change="handleImageUpload"
+                    type="text"
+                    :name="'detail' + index"
+                    :id="'detail' + index"
+                    v-model="details[index]"
+                    placeholder="Details"
+                    class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                 />
             </div>
+            <button
+                class="underline hover:text-blue-600"
+                type="button"
+                @click="addDetailInput"
+            >
+                Add Detail
+            </button>
             <div class="colorInputs mt-3" id="colorInputs">
                 <div v-for="(color, colorIndex) in colors" :key="colorIndex">
-                    <label>
-                        Color:
-                        <input type="text" v-model="color.name" />
-                    </label>
-                    <br />
+                    <div>
+                        <label
+                            for="color"
+                            class="block text-xs font-medium text-gray-700"
+                        >
+                            Color
+                        </label>
+                        <input
+                            type="text"
+                            v-model="color.name"
+                            class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                        />
+                    </div>
                     <div
                         v-for="(size, sizeIndex) in color.sizes"
                         :key="sizeIndex"
                     >
-                        <label>
-                            Size {{ size.name }}:
-                            <input type="number" v-model="size.quantity" />
-                        </label>
-                        <br />
+                        <div class="grid gap-1 grid-cols-2">
+                            <div>
+                                <label
+                                    for="color"
+                                    class="block text-xs font-medium text-gray-700"
+                                >
+                                    Size
+                                </label>
+                                <input
+                                    type="text"
+                                    v-model="size.name"
+                                    class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    for="color"
+                                    class="block text-xs font-medium text-gray-700"
+                                >
+                                    Quantity
+                                </label>
+                                <input
+                                    type="number"
+                                    v-model="size.quantity"
+                                    class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                                />
+                            </div>
+                        </div>
                     </div>
+                    <button
+                        @click="addSizeInput(colorIndex)"
+                        class="underline hover:text-blue-600"
+                        type="button"
+                    >
+                        Add size
+                    </button>
                 </div>
             </div>
             <button
-                class="block mr-2 rounded-xl bg-gray-400 px-8 py-1 text-sm text-white transition hover:bg-gray-500"
+                class="underline hover:text-blue-600"
                 type="button"
                 @click="addColorInput"
             >
-                Add color and quantity
+                Add Color
             </button>
             <div class="mt-3">
                 <textarea
@@ -249,6 +263,18 @@
                     v-model="description"
                     id="editor"
                 ></textarea>
+            </div>
+            <div class="form-group flex mt-3">
+                <label>
+                    <input
+                        class="size-4 rounded border-gray-300"
+                        type="checkbox"
+                        name="is_new"
+                        v-model="is_new"
+                        :checked="is_new === 1"
+                    />
+                    <span class="text-red-600 ml-3"><strong>New</strong></span>
+                </label>
             </div>
             <div
                 v-if="errorMessages.length"
@@ -259,6 +285,7 @@
                         class="mt-1"
                         v-for="(error, index) in errorMessages"
                         :key="index"
+                        ‰
                     >
                         {{ error }}
                     </li>
@@ -268,7 +295,6 @@
             <div class="mb-5 mt-2 w-full">
                 <div class="flex py-3 justify-start lg:flex lg:justify-start">
                     <button
-                        type="submit"
                         class="block mr-2 rounded-xl bg-gray-800 px-8 py-2 text-sm text-white transition hover:bg-black"
                     >
                         Submit
@@ -277,14 +303,20 @@
             </div>
         </form>
     </Dashboard>
+    <LoadingSpinner :isLoading="isLoading" />
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from "vuex";
 import Dashboard from "@/components/Dashboard.vue";
+import LoadingSpinner from "../layout/LoadingSpinner.vue";
+import Swal from "sweetalert2";
+
 export default {
     name: "EditProduct",
+    props: ["id"],
     components: {
         Dashboard,
+        LoadingSpinner,
     },
     data() {
         return {
@@ -293,34 +325,27 @@ export default {
             colors: [
                 {
                     name: "",
-                    sizes: [
-                        { name: "S", quantity: null },
-                        { name: "M", quantity: null },
-                        { name: "L", quantity: null },
-                        { name: "XL", quantity: null },
-                        { name: "2XL", quantity: null },
-                    ],
+                    sizes: [{ name: "", quantity: null }],
                 },
             ],
             product_name: "",
             price: "",
-            detail1: "",
-            detail2: "",
-            detail3: "",
-            detail4: "",
-            detail5: "",
-            detail6: "",
+            details: [],
             is_new: false,
             description: "",
             gender: "",
+            class: "",
             start_datetime: "",
             end_datetime: "",
             discountnumber: "",
             discountquantity: "",
+            discountremaining: "",
             imageUrl: "",
             content: "",
             images: [],
             blogs: "",
+            productImage: [],
+            isLoading: true,
         };
     },
     mounted() {
@@ -336,32 +361,89 @@ export default {
             },
         })
             .then((editor) => {
+                this.editorInstance = editor;
                 editor.model.document.on("change", () => {
                     this.description = editor.getData();
                 });
+                if (this.description) {
+                    editor.setData(this.description);
+                }
             })
             .catch((error) => {
                 console.error(error);
             });
     },
     computed: {
-        ...mapGetters(["notification"]),
+        ...mapGetters(["notification", "formatCurrencyInput"]),
     },
     methods: {
         ...mapActions(["showNotification"]),
+        triggerFileInput() {
+            this.$refs.fileInput.click();
+        },
+        async deleteProduct() {
+            const productId = this.$route.params.id;
+            const result = await Swal.fire({
+                title: "Are you sure you want to delete?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                customClass: {
+                    popup: "confirmDeleteContainer",
+                    title: "fonfirm_delete_title",
+                    confirmButton: "confirm_delete_button",
+                    cancelButton: "confirm_cancel_button",
+                },
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await axios.delete(
+                        `/api/product/delete/${productId}`
+                    );
+                    // console.log(response.data);
+                    if (response.data.success == true) {
+                        this.$router.push({ name: "Dashboard" });
+                    }
+                } catch (error) {
+                    console.error("Error deleting product:", error);
+                }
+            }
+        },
         async getProductData() {
             try {
                 const productId = this.$route.params.id;
                 const response = await axios.get(
                     `/api/product/edit/${productId}`
                 );
-                console.log(response.data);
+                // console.log(response.data);
                 if (response.data.success == true) {
                     this.product_name = response.data.product.name;
-                    this.price = response.data.product.price;
+                    this.price = this.formatCurrencyInput(
+                        response.data.product.price
+                    );
                     this.description = response.data.product.description;
                     this.gender = response.data.productCate.gender;
+                    this.class = response.data.product.class;
                     this.is_new = response.data.product.is_new;
+                    this.productImage = response.data.productImages;
+                    const colorsData = [];
+                    const { colors, sizes, quantities } = response.data;
+                    for (let i = 0; i < colors.length; i++) {
+                        const colorName = colors[i];
+                        const sizeName = sizes[i];
+                        const quantity = quantities[i];
+                        let color = colorsData.find(
+                            (c) => c.name === colorName
+                        );
+                        if (!color) {
+                            color = { name: colorName, sizes: [] };
+                            colorsData.push(color);
+                        }
+                        color.sizes.push({ name: sizeName, quantity });
+                    }
+                    this.colors = colorsData;
                     if (response.data.discountInfo) {
                         this.discountnumber =
                             response.data.discountInfo.discount;
@@ -371,31 +453,50 @@ export default {
                             response.data.discountInfo.start_datetime;
                         this.end_datetime =
                             response.data.discountInfo.end_datetime;
+                        this.discountremaining =
+                            response.data.discountInfo.remaining;
                     }
-                    this.detail1 = response.data.ProductDetails.description1;
-                    this.detail2 = response.data.ProductDetails.description2;
-                    this.detail3 = response.data.ProductDetails.description3;
-                    this.detail4 = response.data.ProductDetails.description4;
-                    this.detail5 = response.data.ProductDetails.description5;
-                    this.detail6 = response.data.ProductDetails.description6;
                     this.description = response.data.product.description;
+                    this.details = response.data.ProductDetails.map(
+                        (detail) => detail.description || ""
+                    );
+                    if (this.editorInstance) {
+                        this.editorInstance.setData(this.description);
+                    }
+                    this.isLoading = false;
                 } else {
-                    console.log("voucher edit error.");
+                    console.log(" edit error.");
                 }
-                //  console.log(this.description);
             } catch (error) {
-                console.error("Error fetching voucher data:", error);
+                this.isLoading = false;
+                console.error("Error fetching data:", error);
             }
         },
-           handleImageUpload(event) {
+        formatPrice() {
+            this.price = this.formatCurrencyInput(this.price);
+        },
+        handleImageUpload(event) {
             const files = event.target.files;
-            this.images = [];
+            this.productImage = [];
             for (let i = 0; i < files.length; i++) {
-                this.images.push(files[i]);
+                this.productImage.push({
+                    image: URL.createObjectURL(files[i]),
+                    url: files[i],
+                });
+            }
+            this.images = this.productImage.map((item) => item.url);
+        },
+        getImageSrc(imagePath) {
+            if (imagePath.startsWith("blob:")) {
+                return imagePath;
+            } else {
+                return `/images/${imagePath}`;
             }
         },
-        async productEdit() {
+        productEdit() {
             const productId = this.$route.params.id;
+            const priceWithoutCurrency = this.price.replace(/[^\d]/g, "");
+            const numericPrice = parseFloat(priceWithoutCurrency);
             let colorsData = [];
             this.colors.forEach((color) => {
                 let sizesData = [];
@@ -409,13 +510,10 @@ export default {
             });
             let formData = new FormData();
             formData.append("product_name", this.product_name);
-            formData.append("price", this.price);
-            formData.append("detail1", this.detail1);
-            formData.append("detail2", this.detail2);
-            formData.append("detail3", this.detail3);
-            formData.append("detail4", this.detail4);
-            formData.append("detail5", this.detail5);
-            formData.append("detail6", this.detail6);
+            formData.append("price", numericPrice);
+            for (let i = 0; i < this.details.length; i++) {
+                formData.append("details[]", this.details[i]);
+            }
             formData.append("is_new", this.is_new ? 1 : 0);
             formData.append("description", this.description);
             formData.append("gender", this.gender);
@@ -423,7 +521,8 @@ export default {
             formData.append("end_datetime", this.end_datetime);
             formData.append("discountnumber", this.discountnumber);
             formData.append("discountquantity", this.discountquantity);
-            formData.append("productId",productId);
+            formData.append("discountremaining", this.discountremaining);
+            formData.append("productId", productId);
             formData.append("colors", JSON.stringify(colorsData));
             for (let i = 0; i < this.images.length; i++) {
                 formData.append("images[]", this.images[i]);
@@ -435,10 +534,10 @@ export default {
                     },
                 })
                 .then((response) => {
-                  console.log(response);
+                    // console.log(response.data);
                     if (response.data.success == true) {
                         this.showNotification(response.data.message);
-                         this.getProductData();
+                        this.getProductData();
                     } else {
                         this.errorMessages = response.data.error;
                     }
@@ -450,15 +549,30 @@ export default {
         addColorInput() {
             this.colors.push({
                 name: "",
-                sizes: [
-                    { name: "S", quantity: null },
-                    { name: "M", quantity: null },
-                    { name: "L", quantity: null },
-                    { name: "XL", quantity: null },
-                    { name: "2XL", quantity: null },
-                ],
+                sizes: [{ name: "", quantity: null }],
             });
+        },
+        addSizeInput(colorIndex) {
+            this.colors[colorIndex].sizes.push({ name: "", quantity: null });
+        },
+        addDetailInput() {
+            this.details.push("");
         },
     },
 };
 </script>
+<style>
+.confirm_cancel_button {
+    font-size: 14px !important;
+    padding: 5px 10px !important;
+    color: white !important;
+    background-color: gray !important;
+}
+
+.confirm_delete_button {
+    font-size: 14px !important;
+    padding: 5px 10px !important;
+    color: white !important;
+    background-color: black !important;
+}
+</style>

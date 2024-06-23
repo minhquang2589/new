@@ -35,12 +35,10 @@ class CRUDController extends Controller
             $colors[] = $color ? $color->color : '';
             $quantities[] = $variant->quantity;
         }
-        function getProductVariants()
-        {
-            $productVariants = product_variants::with('size', 'color')->get();
-            return $productVariants;
-        }
-        $stock = getProductVariants();
+        $stock = product_variants::with('size', 'color')
+            ->where('product_id', $product->id)
+            ->get();
+
         foreach ($stock as $productVariant) {
             $size = $productVariant->size;
             $color = $productVariant->color;
@@ -51,6 +49,7 @@ class CRUDController extends Controller
             'discounts.start_datetime',
             'discounts.end_datetime',
             'discounts.discount',
+            'discounts.remaining',
             DB::raw('discounts.quantity as total_quantity')
         )
             ->join('product_variants', function ($join) use ($id) {
@@ -61,7 +60,7 @@ class CRUDController extends Controller
             ->first();
 
         $productCate = ProductCates::where('id', $product->cate_id)->first();
-        $ProductDetails = ProductDetails::where('id', $product->detail_id)->first();
+        $ProductDetails = ProductDetails::where('product_id', $product->id)->get();
 
         return response()->json([
             'success' => true,
@@ -80,6 +79,7 @@ class CRUDController extends Controller
     public function update(Request $request)
     {
 
+
         $validator = Validator::make($request->all(), [
             'product_name' => 'required|string',
             'price' => 'required',
@@ -88,7 +88,10 @@ class CRUDController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            return response()->json([
+                'success' => false,
+                'error' => $validator->errors()->all(),
+            ]);
         }
 
         $product = Product::findOrFail($request->productId);
@@ -105,6 +108,18 @@ class CRUDController extends Controller
             $product->description = $request->input('description');
             $product->is_new = $request->is_new;
             $product->save();
+
+            $ProductDetails = ProductDetails::where('product_id', $product->id);
+
+            if ($ProductDetails->exists() && $request->details != null) {
+                $ProductDetails->delete();
+                foreach ($request->details as $detail) {
+                    $productDetails = new ProductDetails();
+                    $productDetails->product_id = $product->id;
+                    $productDetails->description = $detail;
+                    $productDetails->save();
+                }
+            }
 
             $productCate = ProductCates::where('id', $product->cate_id)->first();
             $productCate->gender = $request->input('gender');
@@ -130,6 +145,18 @@ class CRUDController extends Controller
                 $query->where('product_id', $product->id);
             })->orderBy('created_at', 'desc')->first();
 
+            if ($discount) {
+                $discount->discount = $request->discountnumber;
+                $discount->quantity = $request->discountquantity;
+                $discount->remaining = $request->discountremaining;
+                $discount->save();
+            } else {
+                $discount = new Discounts();
+                $discount->discount = $request->discountnumber;
+                $discount->quantity = $request->discountquantity;
+                $discount->remaining = $request->discountremaining;
+                $discount->save();
+            }
             if ($request->has('colors')) {
                 $colors = json_decode($request->colors, true);
                 foreach ($colors as $colorData) {
@@ -139,7 +166,7 @@ class CRUDController extends Controller
                     foreach ($colorData['sizes'] as $sizeData) {
                         $sizeName = $sizeData['name'];
                         $quantity = $sizeData['quantity'];
-                        if ($quantity !== null ) {
+                        if ($quantity !== null) {
                             $totalQuantity += $quantity;
                             $sizeModel = Size::updateOrCreate(['size' => $sizeName]);
                             $productVariant = ProductVariant::where([
@@ -149,6 +176,7 @@ class CRUDController extends Controller
                             ])->first();
                             if ($productVariant) {
                                 $productVariant->quantity = $quantity;
+                                $productVariant->discount_id = $discount->id;
                                 $productVariant->save();
                             } else {
                                 $productVariant = ProductVariant::create([
@@ -165,6 +193,7 @@ class CRUDController extends Controller
             }
 
 
+
             DB::commit();
             return response()->json([
                 'success' => true,
@@ -174,7 +203,7 @@ class CRUDController extends Controller
             DB::rollback();
             return response()->json([
                 'success' => false,
-                'error' => ['Product updated fail!'],
+                'error' =>  $e->getMessage(),
             ]);
         }
     }

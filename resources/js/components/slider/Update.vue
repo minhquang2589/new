@@ -1,5 +1,5 @@
 <template>
-    <Dashboard page-title="Section - Update">
+    <Dashboard page-title="Slider - Update">
         <div class="mx-6 lg:mx-0">
             <div class="flex justify-center">
                 <table
@@ -16,6 +16,11 @@
                                 class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                             >
                                 Name
+                            </th>
+                            <th
+                                class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                            >
+                                Link url
                             </th>
                             <th
                                 class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
@@ -49,6 +54,11 @@
                                 class="whitespace-nowrap px-4 py-2 text-gray-900"
                             >
                                 {{ value.name }}
+                            </td>
+                             <td
+                                class="whitespace-nowrap px-4 py-2 text-gray-900"
+                            >
+                                {{ value.link_url }}
                             </td>
                             <td
                                 class="whitespace-nowrap px-4 py-2 text-gray-900"

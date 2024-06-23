@@ -20,15 +20,16 @@ use Illuminate\Database\QueryException;
 class ProductController extends Controller
 {
    //
-   public function view($id)
+   public function handleSearch(Request $request)
    {
-
-      $product = Product::select(
+      $query = $request->input('query');
+      $products = Product::select(
          'products.id',
          'products.name',
          'products.description',
          'products.price',
          'products.is_new',
+         'products.sales_count',
          DB::raw('SUM(product_variants.quantity) as total_quantity'),
          'discounts.quantity as discount_quantity',
          'discounts.discount',
@@ -45,10 +46,56 @@ class ProductController extends Controller
             'products.description',
             'products.price',
             'products.is_new',
+            'products.sales_count',
             'discounts.quantity',
             'discounts.remaining',
             'discounts.discount',
             'discounts.id',
+         )
+         ->where('name', 'like', "%{$query}%")
+         ->orWhere('description', 'like', "%{$query}%")
+         ->get();
+
+      return response()->json([
+         'success' => true,
+         'products' => $products,
+         'resultQuantity' => count($products),
+      ]);
+   }
+   public function view($id)
+   {
+
+      $product = Product::select(
+         'products.id',
+         'products.name',
+         'products.description',
+         'products.price',
+         'products.is_new',
+         'products.sales_count',
+         'products.class',
+         DB::raw('SUM(product_variants.quantity) as total_quantity'),
+         'discounts.quantity as discount_quantity',
+         'discounts.discount',
+         'discounts.remaining',
+         'discounts.id as discount_id',
+         DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+
+      )
+         ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
+         ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
+         ->groupBy(
+            'products.id',
+            'products.name',
+            'products.description',
+            'products.price',
+            'products.is_new',
+            'products.sales_count',
+            'discounts.quantity',
+            'discounts.remaining',
+            'discounts.discount',
+            'discounts.id',
+            'products.class',
+
          )
          ->find($id);
       if (!$product) {
@@ -65,24 +112,19 @@ class ProductController extends Controller
       $colors = Color::whereIn('id', $colorIds)->get();
       $product_info = DB::table('products')
          ->join('product_cates', 'products.cate_id', '=', 'product_cates.id')
-         ->join('product_details', 'products.detail_id', '=', 'product_details.id')
          ->select(
             'products.*',
             'product_cates.gender as category_name',
             'product_cates.gender as category_genter',
-            'product_details.description1 as product_description1',
-            'product_details.description2 as product_description2',
-            'product_details.description3 as product_description3',
-            'product_details.description4 as product_description4',
-            'product_details.description5 as product_description5',
-            'product_details.description6 as product_description6',
          )
          ->where('products.id', '=', $id)
          ->first();
+      $productDetails = ProductDetails::where('product_id', $product->id)->get();
 
       return response()->json([
          'success' => true,
          'product_info' => $product_info,
+         'productDetails' => $productDetails,
          'ProductDetailImg' => $ProductDetailImg,
          'product' => $product,
          'productVariant' => $productVariants,
@@ -96,7 +138,7 @@ class ProductController extends Controller
    {
       $page = $request->input('page');
       $perPage = 30;
-      $productsMore = Product::orderBy('sales_count', 'desc')
+      $productsMore = Product::inRandomOrder()
          ->skip(($page - 1) * $perPage)
          ->take($perPage)
          ->select(
@@ -105,34 +147,34 @@ class ProductController extends Controller
             'products.description',
             'products.price',
             'products.is_new',
-            'products.class',
             DB::raw('SUM(product_variants.quantity) as total_quantity'),
             'discounts.quantity as discount_quantity',
             'discounts.discount',
-            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image1'),
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1 OFFSET 1) as image2')
          )
          ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
          ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
-         ->where('products.class', '=', 'clothes')
          ->groupBy(
             'products.id',
             'products.name',
             'products.description',
             'products.price',
-            'products.class',
             'products.is_new',
             'discounts.quantity',
             'discounts.discount'
          )
          ->get();
+
       $hasMore = $productsMore->count() > 0;
+
       return response()->json([
          'success' => true,
          'productsMore' => $productsMore,
          'hasMore' => $hasMore
-
       ]);
    }
+
 
    ///
    public function newproduct()
@@ -154,8 +196,8 @@ class ProductController extends Controller
          'discounts.quantity as discount_quantity',
          'discounts.discount',
          'discounts.status',
-         DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
-
+         DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image1'),
+         DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1 OFFSET 1) as image2')
 
       )
          ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')

@@ -4,38 +4,44 @@
             <div class="w-full px-10 mt-10">
                 <form @submit.prevent="sliderUpdate">
                     <div class="">
+                        <div class="flex mb-5 items-center gap-4">
+                            <img
+                                :src="imagePreviewUrl"
+                                class="size-28 rounded object-cover"
+                            />
+                            <button
+                                type="button"
+                                @click="triggerFileInput"
+                                class="rounded hover:underline"
+                            >
+                                Change
+                            </button>
+                            <input
+                                type="file"
+                                ref="fileInput"
+                                @change="handleFileUpload"
+                                class="hidden"
+                            />
+                        </div>
                         <div class="relative z-0 mb-2 group">
                             <input
                                 type="text"
                                 name="name"
                                 id="name"
                                 v-model="name"
-                                class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                placeholder="Content"
                             />
-                            <label
-                                for="name"
-                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                >Name content</label
-                            >
-                        </div>
-                        <div class="mb-5">
-                            <label
-                                class="block mb-2 text-sm font-medium text-gray-500 dark:text-gray-400"
-                                for="content3"
-                                >Image</label
-                            >
                             <input
-                                require
-                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                aria-describedby="image"
-                                for="images"
-                                type="file"
-                                id="image-input"
-                                name="images[]"
-                                multiple
-                                @change="handleImageUpload"
+                                type="text"
+                                name="link_url"
+                                id="link_url"
+                                v-model="link_url"
+                                class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                placeholder="Link url"
                             />
                         </div>
+
                         <label>
                             <input
                                 class="size-4 rounded border-gray-300"
@@ -87,9 +93,12 @@ export default {
     data() {
         return {
             errorMessages: [],
-            images: [],
+            images: "",
             status: false,
             name: "",
+            link_url: "",
+            imagePreviewUrl: null,
+            fileName: "",
         };
     },
     mounted() {
@@ -100,37 +109,47 @@ export default {
     },
     methods: {
         ...mapActions(["showNotification"]),
-
+        triggerFileInput() {
+            this.$refs.fileInput.click();
+        },
         async getSliderData() {
             try {
                 const sliderId = this.$route.params.id;
                 const response = await axios.get(
                     `/api/slider/edit/${sliderId}`
                 );
-                console.log(response.data);
+                //  console.log(response.data);
                 if (response.data.success == true) {
                     this.name = response.data.dataSlider.name;
+                    this.link_url = response.data.dataSlider.link_url;
                     this.status = response.data.dataSlider.status;
+                    this.imagePreviewUrl = `/images/${response.data.dataSlider.image}`;
                 } else {
-                    console.log("voucher edit error.");
+                    console.log("¥error.");
                 }
             } catch (error) {
-                console.error("Error fetching voucher data:", error);
+                console.error("Error fetching data:", error);
             }
         },
-        handleImageUpload(event) {
+        handleFileUpload(event) {
             const file = event.target.files[0];
-            this.images = [file];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    this.imagePreviewUrl = reader.result;
+                };
+                reader.readAsDataURL(file);
+            }
+            this.fileName = [file];
         },
         async sliderUpdate() {
-            const file = this.images[0];
             const sliderId = this.$route.params.id;
             let formData = new FormData();
             formData.append("name", this.name);
+            formData.append("link_url", this.link_url);
             formData.append("status", this.status ? 1 : 0);
-            formData.append("image", file);
+            formData.append("image", this.fileName[0]);
             formData.append("sliderId", sliderId);
-
             axios
                 .post("/api/slider/update", formData, {
                     headers: {
@@ -138,9 +157,9 @@ export default {
                     },
                 })
                 .then((response) => {
-                      console.log(response.data);
+                    //   console.log(response.data);
                     if (response.data.success == true) {
-                        this.showNotification(response.data.message);
+                        this.errorMessages = response.data.message;
                     } else {
                         this.errorMessages = response.data.error;
                     }

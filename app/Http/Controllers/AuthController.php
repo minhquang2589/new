@@ -27,11 +27,11 @@ class AuthController extends Controller
 
     public function upload(Request $request)
     {
+
         // return response()->json([
         //     'success' => true,
-        //     'message' => $request -> all(),
+        //     'message' =>  $request ->all()
         // ]);
-
         $validator = Validator::make($request->all(), [
             'product_name' => 'required|string',
             'price' => 'required',
@@ -50,6 +50,7 @@ class AuthController extends Controller
                 'error' => $validator->errors()->all(),
             ]);
         }
+
         try {
             DB::beginTransaction();
 
@@ -69,25 +70,23 @@ class AuthController extends Controller
                 'gender' => $request->input('gender'),
                 'description' => "For " . $request->input('gender')
             ]);
-
-            $productDetails = new ProductDetails();
-            $productDetails->description1 = $request->input('detail1');
-            $productDetails->description2 = $request->input('detail2');
-            $productDetails->description3 = $request->input('detail3');
-            $productDetails->description4 = $request->input('detail4');
-            $productDetails->description5 = $request->input('detail5');
-            $productDetails->description6 = $request->input('detail6');
-            $productDetails->save();
-
             $product = new Product();
             $product->name = $request->product_name;
             $product->price = $request->price;
             $product->description =  $request->description;
             $product->class =  $request->class;
             $product->cate_id = $ProductCates->id;
-            $product->detail_id = $productDetails->id;
             $product->is_new = $request->is_new;
             $product->save();
+
+            if ($request->details) {
+                foreach ($request->details as $detail) {
+                    $productDetails = new ProductDetails();
+                    $productDetails->product_id =  $product->id;
+                    $productDetails->description = $detail;
+                    $productDetails->save();
+                }
+            }
 
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
@@ -157,9 +156,7 @@ class AuthController extends Controller
                     'error' => ['Please enter color and quantity'],
                 ]);
             }
-
             DB::commit();
-
             return response()->json([
                 'success' => true,
                 'message' => ['Product uploaded successfully!'],
@@ -175,7 +172,6 @@ class AuthController extends Controller
     ///
     public function uploadFile(Request $request)
     {
-
         try {
             if ($request->hasFile('upload')) {
                 $originName = $request->file('upload')->getClientOriginalName();

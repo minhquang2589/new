@@ -1,5 +1,5 @@
 <template>
-    <Dashboard page-title="BLog - Update">
+    <Dashboard page-title="Section - Update">
         <div class="mx-6 lg:mx-0">
             <div class="flex justify-center">
                 <table
@@ -10,13 +10,19 @@
                             <th
                                 class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                             >
-                                images
+                                image
                             </th>
                             <th
                                 class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                             >
-                                Title
+                                Name
                             </th>
+                            <th
+                                class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                            >
+                                Link url
+                            </th>
+
                             <th
                                 class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                             >
@@ -48,7 +54,12 @@
                             <td
                                 class="whitespace-nowrap px-4 py-2 text-gray-900"
                             >
-                                {{ value.title }}
+                                {{ value.name }}
+                            </td>
+                            <td
+                                class="whitespace-nowrap px-4 py-2 text-gray-900"
+                            >
+                                {{ value.link_url }}
                             </td>
                             <td
                                 class="whitespace-nowrap px-4 py-2 text-gray-900"

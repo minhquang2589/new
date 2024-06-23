@@ -45,6 +45,7 @@ const actions = {
       axios
          .get('/api/cart')
          .then((response) => {
+            // console.log(response.data);
             if (response.data.success) {
                commit('setCart', response.data.cart);
             } else {
@@ -52,7 +53,7 @@ const actions = {
             }
          })
          .catch((error) => {
-            console.error('Error:', error);
+            // console.error('Error:', error);
             commit('setCart', []);
          });
    },
@@ -73,7 +74,7 @@ const actions = {
             commit('setCartQuantity', response.data.cartQuantity);
          })
          .catch((error) => {
-            console.error('Error fetching cart quantity:', error);
+            // console.error('Error fetching cart quantity:', error);
             commit('setCartData', {
                totalDiscountAmount: 0,
                total: 0,
@@ -88,6 +89,7 @@ const actions = {
       }
       try {
          const response = await axios.post('/api/check-voucher', { code: voucherCode });
+         // console.log( response.data);
          if (response.data.success === true) {
             commit('setCartData', response.data.dataInVoucher);
             commit('setIsVoucherValid', true);
@@ -108,6 +110,7 @@ const actions = {
    async removeVoucherCode({ commit }) {
       try {
          const response = await axios.post('/api/remove-voucher');
+         // console.log( response.data);
          if (response.data.success == true) {
             commit('clearVoucher');
             commit('setCart', response.data.cart);

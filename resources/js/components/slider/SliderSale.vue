@@ -1,12 +1,14 @@
 <template>
-    <div class="sl_2">
+    <div class="sl_2" v-if="SliderSale.length > 0">
         <div class="my-5 flex justify-center">
             <div>
-                <h1
-                    class="lg:text-xl text-sm font-bold text-gray-900 sm:text-3xl"
-                >
-                    Discount products
-                </h1>
+                <router-link to="/product/discount">
+                    <h1
+                        class="lg:text-xl text-sm font-bold text-gray-900 sm:text-3xl"
+                    >
+                        Discount products
+                    </h1>
+                </router-link>
             </div>
         </div>
         <router-link to="/product/discount">

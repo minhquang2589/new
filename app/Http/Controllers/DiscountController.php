@@ -13,44 +13,79 @@ use Illuminate\Support\Facades\DB;
 class DiscountController extends Controller
 {
     //
-    public function discountView()
+    public function view()
     {
-        $discount = Discounts::all();
-        return view('discount.discount', [
-            'discounts' => $discount,
+        $discounts = DB::table('discounts')->where('quantity', '>', 0)->get();
+        return response()->json([
+            'success' => true,
+            'discount' => $discounts,
         ]);
     }
     ///
-    public function discountEdit(Request $request)
-    {
-        $discount = Discounts::find($request->input('discount_id'));
-        return view('discount.discountEdit', ['discountEdit' => $discount]);
-    }
-    ///
-    public function discountUpdate(Request $request)
+    public function delete($id)
     {
         try {
             DB::beginTransaction();
-            $discountId = $request->input('discount_id');
+            $Discounts = Discounts::find($id);
+            if (!$Discounts) {
+                return response()->json([
+                    'success' => false,
+                    'error' => ['Discounts not found.'],
+                ]);
+            }
+            $Discounts->delete();
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => ['Discounts deleted successfully.'],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'error' => ['Error'],
+            ]);
+        }
+    }
+    public function discountEdit($id)
+    {
+        $discount = Discounts::find($id);
+        return response()->json([
+            'success' => true,
+            'discount' =>  $discount
+        ]);
+    }
+    ///
+    public function handleUpdate(Request $request)
+    {
+        try {
+            DB::beginTransaction();
             $status = $request->input('status');
-            $discount = Discounts::find($discountId);
+            $discount = Discounts::find($request->id);
             $startDatetime = date('Y-m-d H:i:s', strtotime(str_replace('/', '-', $request->input('start_datetime'))));
             $endDatetime = date('Y-m-d H:i:s', strtotime(str_replace('/', '-', $request->input('end_datetime'))));
 
             if ($discount) {
                 $discount->start_datetime = $startDatetime;
                 $discount->end_datetime = $endDatetime;
-                $discount->discount = $request->input('discountnumber');
-                $discount->quantity =  $request->input('discountquantity');
-                $discount->remaining =  $request->input('remaining');
+                $discount->discount = $request->discount;
+                $discount->quantity =  $request->quantity;
+                $discount->remaining =  $request->remaining;
                 $discount->status =  $status;
                 $discount->save();
-            } 
+            }
             DB::commit();
-            return redirect()->back()->with('success', 'Discount uploaded successfully!');
+            return response()->json([
+                'success' => true,
+                'message' =>  ['Discount update successfully.']
+            ]);
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'An error occurred while uploading the Discount.');
+            return response()->json([
+                'success' => true,
+                'error' =>  ['An error occurred while update the Discount.'],
+                'errors' => $e->getMessage()
+            ]);
         }
     }
 }

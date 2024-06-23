@@ -8,7 +8,7 @@ use App\Models\Payment;
 use App\Models\Customers;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\color;
-use App\Models\Section_02;
+use App\Models\Section;
 use App\Models\Product;
 use App\Models\ordernumber;
 use App\Models\size;
@@ -36,57 +36,50 @@ class SectionController extends Controller
 
    public function getSection()
    {
-      $section_02 = Section_02::where('status', 1)->first();
-
+      $Sections = Section::where('status', 1)->first();
       return response()->json([
          'success' => true,
-         'section' =>  $section_02,
+         'section' =>  $Sections,
       ]);
    }
    ////
    public function HandleUpload(Request $request)
    {
       $validator = Validator::make($request->all(), [
-         'title' => 'required|string|max:100',
-         'description' => 'required|string|max:300',
+         'title' => 'required|string|max:200',
+         'description' => 'required|string|max:500',
+         'link_url' => 'required|string|max:500',
+         'status' => 'required',
          'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
       ]);
-
       if ($validator->fails()) {
          return response()->json([
             'success' => false,
             'error' => $validator->errors()->all(),
          ]);
       }
-
       $status = $request->status;
-
+      $section = new Section();
+      $section->name = $request->title;
       if ($request->hasFile('image')) {
          $image = $request->file('image');
          $imageName = time() . '_' . $image->getClientOriginalName();
          $image->move(public_path('images'), $imageName);
-         $section = new Section_02();
-         $section->title = $request->title;
-         $section->description = $request->description;
          $section->image = $imageName;
-         $section->status = $status;
-         $section->save();
-
-         return response()->json([
-            'success' => true,
-            'message' => 'Upload section successfully!',
-         ]);
       }
-
+      $section->status = $status;
+      $section->link_url =  $request->link_url;
+      $section->description = $request->description;
+      $section->save();
       return response()->json([
-         'success' => false,
-         'error' => 'No image uploaded!',
+         'success' => true,
+         'message' => 'Upload section successfully!',
       ]);
    }
    ///
    public function view()
    {
-      $section = Section_02::all();
+      $section = Section::all();
       return response()->json([
          'success' => true,
          'dataSection' => $section,
@@ -97,7 +90,7 @@ class SectionController extends Controller
    {
       try {
          DB::beginTransaction();
-         $section = Section_02::find($id);
+         $section = Section::find($id);
          if (!$section) {
             return response()->json([
                'success' => false,
@@ -123,7 +116,7 @@ class SectionController extends Controller
    ///
    public function editSectionView($id)
    {
-      $section = Section_02::find($id);
+      $section = Section::find($id);
       return response()->json([
          'success' => true,
          'dataSection' =>  $section
@@ -133,9 +126,10 @@ class SectionController extends Controller
    public function editSection(Request $request)
    {
       $validator = Validator::make($request->all(), [
-         'title' => 'required|string|max:100',
+         'link_url' => 'required|string',
+         'status' => 'required',
+         'name' => 'required|string|max:100',
          'description' => 'required|string|max:300',
-         'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
       ]);
 
       if ($validator->fails()) {
@@ -146,7 +140,7 @@ class SectionController extends Controller
       }
       try {
          DB::beginTransaction();
-         $section = Section_02::find($request->sectionId);
+         $section = Section::find($request->sectionId);
          if (!$section) {
             return response()->json([
                'success' => false,
@@ -155,15 +149,16 @@ class SectionController extends Controller
          }
          if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('images'), $imageName);
-            $section->image = $imageName;
+            $fileName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('images'), $fileName);
+            $section->image = $fileName;
          }
-         $section->update([
-            'title' => $request->title,
-            'description' =>  $request->description,
-            'status' => $request->status,
-         ]);
+         $section->name = $request->name;
+         $section->status = $request->status;
+         $section->link_url = $request->link_url;
+         $section->description = $request->description;
+         $section->save();
+
          DB::commit();
          return response()->json([
             'success' => true,

@@ -14,6 +14,25 @@ return [
     | specified when running a cache operation inside the application.
     |
     */
+    'memcached' => [
+        'driver' => 'memcached',
+        'persistent_id' => env('MEMCACHED_PERSISTENT_ID'),
+        'sasl' => [
+            env('MEMCACHED_USERNAME'),
+            env('MEMCACHED_PASSWORD'),
+        ],
+        'options' => [
+            // Một số tùy chọn tùy chỉnh (nếu có)
+        ],
+        'servers' => [
+            [
+                'host' => env('MEMCACHED_HOST', '127.0.0.1'),
+                'port' => env('MEMCACHED_PORT', 11211),
+                'weight' => 100,
+            ],
+        ],
+    ],
+
 
     'default' => env('CACHE_STORE', 'database'),
 
@@ -102,6 +121,6 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_cache_'),
 
 ];

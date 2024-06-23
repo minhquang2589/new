@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AdminController;
 use Laravel\Folio\Folio;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
@@ -30,10 +29,19 @@ use App\Http\Controllers\VouchersController;
 use App\Http\Controllers\ReactController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ChartController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\LookbookController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SliderController;
+use App\Http\Controllers\RecentlyProductCrontroller;
+use App\Http\Controllers\SizeController;
+use App\Http\Controllers\SLiderBagController;
+use App\Http\Controllers\StoreController;
+use App\Http\Controllers\VideoController;
 use App\Models\Product;
 use App\Models\featured_sections;
+use App\Models\SizeChart;
 
 //////// 
 Route::prefix('api')->group(function () {
@@ -41,7 +49,6 @@ Route::prefix('api')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::get('/check-auth', [LoginController::class, 'checkAuth']);
-    Route::get('/user', [LoginController::class, 'user']);
     Route::get('/section', [SectionController::class, 'getSection']);
     Route::post('/subscribe', [NewsletterController::class, 'subscribe']);
     Route::get('/slider', [SliderController::class, 'getSlider']);
@@ -53,7 +60,7 @@ Route::prefix('api')->group(function () {
     Route::get('/products/new', [DashboardController::class, 'getProductNew']);
     Route::get('/products/unisex', [DashboardController::class, 'getProductUnisex']);
     Route::get('/products/discount', [DashboardController::class, 'getProductDiscount']);
-    Route::get('/filter/content', [FilterController::class, 'filterCount']);
+    Route::get('/filter/content/{category}', [FilterController::class, 'filterCount']);
     Route::get('/product/view/{id}', [ProductController::class, 'view']);
     Route::get('/products/related', [ProductController::class, 'relatedProduct']);
     Route::get('/cart', [CartController::class, 'cartView']);
@@ -68,6 +75,7 @@ Route::prefix('api')->group(function () {
     Route::post('/checkout/process', [CheckoutController::class, 'process']);
     Route::post('/check-stock', [ProductController::class, 'checkStock']);
     Route::post('/handle/checkout', [CheckoutController::class, 'handlecheckout']);
+    Route::post('/handle/checkout/vnpay', [CheckoutController::class, 'vnpay']);
     Route::get('/blog', [BlogController::class, 'blogView']);
     Route::post('/check-voucher', [VouchersController::class, 'handleCheckVoucher']);
     Route::post('/remove-voucher', [VouchersController::class, 'handleRemoveVoucher']);
@@ -76,10 +84,23 @@ Route::prefix('api')->group(function () {
     Route::get('/product/shoes', [ShopController::class, 'getShoe']);
     Route::get('/product/accessorys', [ShopController::class, 'getAccessory']);
     Route::get('/product/clothes', [ShopController::class, 'getClothe']);
+    Route::get('/recently-products', [RecentlyProductCrontroller::class, 'getRecentlyProducts']);
+    Route::post('/addToRecently', [RecentlyProductCrontroller::class, 'addToRecently']);
+    Route::get('/product/recently', [RecentlyProductCrontroller::class, 'getAllRecentlyProducts']);
+    Route::get('/video', [VideoController::class, 'videoView']);
+    Route::get('/shop/image', [ShopController::class, 'getShop']);
+    Route::get('/products/search', [ProductController::class, 'handleSearch']);
+    Route::get('/size/view', [SizeController::class, 'view']);
+    Route::get('/slider-bag', [SLiderBagController::class, 'index']);
+    Route::get('/get-lookbook', [LookbookController::class, 'getLookbook']);
+    Route::get('/lookbook-view/{id}', [LookbookController::class, 'getLookbookDetail']);
+    Route::get('/store-info', [StoreController::class, 'storeInfo']);
+    Route::get('/contact-info', [ContactController::class, 'getContact']);
 
 
     /////admin
     Route::middleware(['admin'])->group(function () {
+        Route::get('/user', [LoginController::class, 'user']);
         Route::post('/upload/product/file', [AuthController::class, 'uploadFile']);
         Route::post('/upload/product', [AuthController::class, 'upload']);
         Route::get('/products/table', [TableController::class, 'index']);
@@ -106,147 +127,57 @@ Route::prefix('api')->group(function () {
         Route::get('/blog/view', [BlogController::class, 'blogEditView']);
         Route::get('/blog/edit/{id}', [BlogController::class, 'editBlogView']);
         Route::delete('/blog/delete/{id}', [BlogController::class, 'removeBlog']);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        Route::get('/discount/view', [DiscountController::class, 'view']);
+        Route::delete('/discount/delete/{id}', [DiscountController::class, 'delete']);
+        Route::get('/discount/edit/{id}', [DiscountController::class, 'discountEdit']);
+        Route::post('/discount/update', [DiscountController::class, 'handleUpdate']);
+        Route::get('/discount/edit/{id}', [DiscountController::class, 'discountEdit']);
+        Route::get('/customers/view', [ProductManagementController::class, 'customertable']);
+        Route::delete('/customer/delete/{id}', [ProductManagementController::class, 'customerdelete']);
+        Route::get('/orders', [ProductManagementController::class, 'orders']);
+        Route::get('/orderdetail/{id}', [ProductManagementController::class, 'orderdetail']);
+        Route::get('/users/view', [UserManagementController::class, 'index']);
+        Route::delete('/user/delete/{id}', [UserManagementController::class, 'delete']);
+        Route::get('/user/edit/{id}', [UserManagementController::class, 'userEdit']);
+        Route::post('/user/update', [UserManagementController::class, 'userUpdate']);
+        Route::post('/video/upload', [VideoController::class, 'HandleUpload']);
+        Route::get('/video/update', [VideoController::class, 'handleUpdate']);
+        Route::delete('/video/delete/{id}', [VideoController::class, 'removeVideo']);
+        Route::get('/video/edit/{id}', [VideoController::class, 'editVideoView']);
+        Route::post('/video/update/handle', [VideoController::class, 'handleEditVideo']);
+        Route::post('/shop/upload', [ShopController::class, 'shopUpload']);
+        Route::get('/shop/update/view', [ShopController::class, 'shopUpdate']);
+        Route::delete('/shop/delete/{id}', [ShopController::class, 'removeShopImg']);
+        Route::get('/shop/edit/{id}', [ShopController::class, 'editShopView']);
+        Route::post('/shop/update', [ShopController::class, 'handleUpdateShop']);
+        Route::post('/size/upload', [SizeController::class, 'HandleUpload']);
+        Route::post('/size/update', [SizeController::class, 'handleUpdate']);
+        Route::delete('/size/delete/{id}', [SizeController::class, 'remove']);
+        Route::get('/size/edit/{id}', [SizeController::class, 'edit']);
+        Route::post('/slider-bag/upload', [SLiderBagController::class, 'handleUpload']);
+        Route::get('/slider-bag/view', [SLiderBagController::class, 'view']);
+        Route::delete('/slider-bag/delete/{id}', [SLiderBagController::class, 'delete']);
+        Route::get('/slider-bag/edit/view/{id}', [SLiderBagController::class, 'editSliderBagView']);
+        Route::post('/slider-bag/update', [SLiderBagController::class, 'handleUpdate']);
+        Route::post('/lookbook/upload', [LookbookController::class, 'handleUpload']);
+        Route::get('/lookbook-update/view', [LookbookController::class, 'view']);
+        Route::delete('/lookbook/delete/{id}', [LookbookController::class, 'delete']);
+        Route::get('/lookbook/edit/{id}', [LookbookController::class, 'editView']);
+        Route::post('/lookbook-update', [LookbookController::class, 'handleUpdate']);
+        Route::post('/store/upload', [StoreController::class, 'handleUpload']);
+        Route::get('/about-view', [StoreController::class, 'view']);
+        Route::delete('/about/delete/{id}', [StoreController::class, 'delete']);
+        Route::get('/about-edit/{id}', [StoreController::class, 'edit']);
+        Route::post('/about/update', [StoreController::class, 'handleUpdate']);
+        Route::get('/monthly-sales', [ChartController::class, 'getMonthlySales']);
+        Route::get('/top-selling-products', [ChartController::class, 'getTopSellingProducts']);
+        Route::post('/contact/upload', [ContactController::class, 'handleUpload']);
+        Route::get('/contact-view', [ContactController::class, 'getContactView']);
+        Route::delete('/contact/delete/{id}', [ContactController::class, 'delete']);
+        Route::get('/contact-edit/{id}', [ContactController::class, 'edit']);
+        Route::post('/contact/update', [ContactController::class, 'handleUpdate']);
     });
     /////
 });
 
-
-
 Route::view('/{any}', 'app')->where('any', '.*');
-
-
-
-// Route::get('/', [UserController::class, 'product'])->name('product');
-// Route::get('/get-product', [UserController::class, 'getProduct'])->name('get.product');
-// //////
-// Route::get('/error', [SectionController::class, 'error'])->name('error.page');
-// Route::get('/size-guize', [HomeController::class, 'size'])->name('size.guize');
-// Route::get('/cart/quantity', [CartController::class, 'getCartQuantity'])->name('cart.quantity');
-// Route::get('/cart-stt-tt', [CartController::class, 'SubtotalTotal'])->name('cart.total.subtotal');
-// Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-// Route::get('/homepage', [UserController::class, 'homepage'])->name('homepage');
-// Route::get('/login', [LoginController::class, 'login'])->name('login');
-// Route::get('/forgotpassword', [ForgotPasswordController::class, 'index'])->name('forgotpassword');
-// Route::get('/register', [RegisterController::class, 'index'])->name('register');
-// Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
-// Route::post('/do-login', [LoginController::class, 'checklogin'])->name('admin.login');
-// Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
-// Route::post('/subscribe', [NewsletterController::class, 'subscribe'])->name('subscribe');
-// Route::post('/add-to-cart', [CartController::class, 'addcart'])->name('addcart');
-// Route::get('/cart', [CartController::class, 'index'])->name('cart');
-// Route::post('/cart-remove', [CartController::class, 'cartremore'])->name('cart.remove');
-// Route::post('/cart-view-remove', [CartController::class, 'cartviewremore'])->name('cart.view.remove');
-// Route::get('/get-cart', [ViewCartController::class, 'viewCart'])->name('get-cart');
-// Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.update-quantity');
-// Route::post('/check-stock', [ProductController::class, 'checkStock'])->name('checkStock');
-// Route::post('/check-quantity-stock', [ProductController::class, 'checkQuantityProduct'])->name('checkQuantityStock');
-// Route::post('/check-quantity-all', [ProductController::class, 'checkQuantityAll'])->name('checkQuantityAll');
-// Route::get('/load-more', [ProductController::class, 'loadMoreProduct'])->name('loadmoreproducts');
-// Route::post('/load-more', [ProductController::class, 'loadMoreProduct'])->name('loadmoreproducts');
-// Route::get('/products', [DashboardController::class, 'productView'])->name('product.view.view');
-// Route::get('/product/mens', [DashboardController::class, 'productformen'])->name('product.formen');
-// Route::get('/product/womens', [DashboardController::class, 'productforwomen'])->name('product.forwomen');
-// Route::get('/product/unisexs', [DashboardController::class, 'productforunisex'])->name('product.forunisex');
-// Route::get('/get-unisex', [DashboardController::class, 'getUnisex'])->name('get.unisex.product');
-// Route::get('/get-women', [DashboardController::class, 'getWomen'])->name('get.women.product');
-// Route::get('/get-men', [DashboardController::class, 'getMen'])->name('get.men.product');
-// Route::get('/product-view', [DashboardController::class, 'getProductView'])->name('get.productview.product');
-// Route::get('/product/bestsellers', [DashboardController::class, 'bestsellView'])->name('product.bestseller.view');
-// Route::get('/get-bestsell', [DashboardController::class, 'getBestSell'])->name('get.bestsell.product');
-// Route::get('/view/{id}', [ProductController::class, 'view'])->name('product.view');
-// Route::post('/hand/checkout', [CheckoutController::class, 'handlecheckout'])->name('handlecheckout.checkout');
-// Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
-// Route::post('/cart/update', [CartController::class, 'updateTime'])->name('cart.update.time');
-// Route::post('/check-voucher', [VouchersController::class, 'checkVouchers'])->name('check-voucher');
-// Route::get('/new/product', [ProductController::class, 'newproduct'])->name('product.new');
-// Route::get('/get-new', [ProductController::class, 'getNewproduct'])->name('get.new.product');
-// Route::get('/search', [SearchController::class, 'search'])->name('search');
-// Route::get('/product/discount', [DashboardController::class, 'discountView'])->name('discount.view.view');
-// Route::get('/get-discount', [DashboardController::class, 'getDiscountView'])->name('get.discount.view');
-// Route::get('/about', [UserController::class, 'about'])->name('about');
-// Route::get('/home', [UserController::class, 'home'])->name('home');
-// Route::get('/project', [UserController::class, 'project'])->name('project');
-// Route::get('/blog', [UserController::class, 'blog'])->name('blog');
-// Route::get('/contact', [UserController::class, 'contact'])->name('contact');
-// Route::get('/filter-content', [FilterController::class, 'filterContent'])->name('filter.content');
-// //admin
-// Route::middleware(['checkRole'])->group(function () {
-//     Route::get('/send/mail', [EmailController::class, 'sendMail'])->name('send.mail');
-//     Route::get('admin/', [AdminController::class, 'index']);
-//     Route::post('/upload-img', [AuthController::class, 'store'])->name('upload.img');
-//     Route::post('/upload/file', [AuthController::class, 'uploadFile'])->name('upload.file');
-
-//     Route::get('/product/{id}/edit', [CRUDController::class, 'edit'])->name('product.edit');
-//     Route::post('/product/{id}/update', [CRUDController::class, 'update'])->name('update.product');
-//     Route::get('/productmanagement', [ProductController::class, 'product'])->name('productmanagement');
-//     Route::delete('/productmanagement/delete/{id}', [ProductController::class, 'removeproduct'])->name('productmanagement.delete');
-//     Route::delete('/featuredsections/delete/{id}', [SectionController::class, 'featuredsectionsDelete'])->name('featuredsections.delete');
-//     Route::get('/featuredsections/{id}/edit', [SectionController::class, 'featuredsectionsEdit'])->name('featuredsections.edit');
-//     Route::get('/featuredsection', [SectionController::class, 'featuredsection'])->name('featuredsection');
-//     Route::post('/featuredsection/edit', [SectionController::class, 'featuredsectionEdit'])->name('featuredsection.edit');
-//     Route::post('/featuredsection/update', [SectionController::class, 'featuredsectionsUpdate'])->name('featuredsection.update');
-
-//     Route::get('/section/nd', [SectionController::class, 'section_02'])->name('section.nd');
-//     Route::post('/section-edit', [SectionController::class, 'section_02Edit'])->name('section_02.edit');
-//     Route::get('/section/{section_id}', [SectionController::class, 'section_02Update'])->name('section_02.update');
-//     Route::post('/section/update', [SectionController::class, 'sectionUpdate'])->name('section.update');
-//     Route::get('/section-upload', [SectionController::class, 'upload_section'])->name('upload.section');
-//     Route::post('/section-delete', [SectionController::class, 'section_02Delete'])->name('section_02.delete');
-
-//     Route::get('/producttable', [TableController::class, 'index'])->name('producttable');
-//     Route::get('/usermanagement', [UserManagementController::class, 'index'])->name('usermanagement');
-//     Route::delete('/usermanagement/delete/{id}', [UserManagementController::class, 'delete'])->name('usermanagement.delete');
-//     Route::get('/uploadproduct', [AuthController::class, 'index'])->name('uploadproduct.show');
-//     Route::post('/uploadproduct', [AuthController::class, 'upload'])->name('uploadproduct');
-//     Route::get('/customers', [ProductManagementController::class, 'customertable'])->name('customers');
-//     Route::delete('/customer/delete/{id}', [ProductManagementController::class, 'customerdelete'])->name('customer.delete');
-//     Route::post('/customer/edit/{id}', [ProductManagementController::class, 'customeredit'])->name('customer.edit');
-//     Route::get('/ordermanagements', [ProductManagementController::class, 'order'])->name('ordermanagements');
-//     Route::get('/orderdetail/{id}', [ProductManagementController::class, 'orderdetail'])->name('orderdetail');
-//     Route::get('/orders/filter', [ProductManagementController::class, 'orderdetail'])->name('order.filter');
-//     Route::get('/vouchers', [VouchersController::class, 'view'])->name('vouchers.view');
-//     Route::post('/vouchers/edit', [VouchersController::class, 'edit'])->name('vouchers.edit');
-//     Route::get('/vouchers/update/{id}', [VouchersController::class, 'updateVouchers'])->name('vouchers.update');
-//     Route::get('/vouchers/upload', [VouchersController::class, 'uploadVouchers'])->name('vouchers.upload');
-//     Route::delete('/vouchers/delete/{id}', [VouchersController::class, 'deleteVouchers'])->name('vouchers.delete');
-//     Route::post('/vouchers/{id}/edit', [VouchersController::class, 'editVouchers'])->name('edit.vouchers');
-//     Route::get('/slider', [SliderController::class, 'slider'])->name('slider');
-//     Route::post('/slider/edit', [SliderController::class, 'sliderEdit'])->name('slider.edit');
-//     Route::delete('/slider/delete/{id}', [SliderController::class, 'sliderDelete'])->name('slider.delete');
-//     Route::get('/slider/update/{id}', [SliderController::class, 'sliderUpdate'])->name('slider.update');
-//     Route::post('/slider/update', [SliderController::class, 'editView'])->name('slider.view.update');
-//     Route::get('/slider/upload', [SliderController::class, 'sliderUpload'])->name('slider.upload');
-//     Route::get('/discount', [DiscountController::class, 'discountView'])->name('discount.view');
-//     Route::get('/discount/edit/{id}', [DiscountController::class, 'discountEdit'])->name('discount.edit');
-//     Route::post('/discount/update', [DiscountController::class, 'discountUpdate'])->name('discount.update');
-//     Route::get('/blog/upload', [BlogController::class, 'blogUpload'])->name('blog.upload');
-//     Route::get('/blog/update', [BlogController::class, 'blogUpdate'])->name('blog.update');
-//     Route::post('/blog-upload', [BlogController::class, 'handleUpload'])->name('blog.update.submit');
-//     Route::post('/blog/file-upload', [BlogController::class, 'blogFileUpload'])->name('blog.file.upload');
-//     Route::post('/blog/delete/{id}', [BlogController::class, 'blogDelete'])->name('blog.delete');
-//     Route::get('/blog/edit/{id}', [BlogController::class, 'blogEdit'])->name('blog.edit');
-//     Route::post('/blog-edit', [BlogController::class, 'blogEditSubmit'])->name('blog.edit.submit');
-// });
-// // users
-// Route::middleware([AuthenMiddleware::class])->group(function () {
-//     Route::get('/changepassword', [ChangePasswordController::class, 'index'])->name('changepassword');
-//     Route::post('/change-password', [ChangePasswordController::class, 'change'])->name('change.password');
-//     Route::get('/profile', [UserController::class, 'profile'])->name('profile');
-// });

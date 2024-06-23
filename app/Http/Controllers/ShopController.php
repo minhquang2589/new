@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\User;
 
 use Illuminate\Http\Request;
@@ -11,23 +12,160 @@ use App\Models\product_variants;
 use App\Models\Size;
 use App\Models\Color;
 use App\Models\ProductCates;
+use App\Models\Shop;
 use App\Models\ProductDetails;
 use App\Models\Images;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+
+use Monolog\Handler\NullHandler;
 
 class ShopController extends Controller
 {
+    ///
+    public function getShop()
+    {
+        $shop = Shop::where('status', 1)->first();
+        return response()->json([
+            'success' => true,
+            'shop' =>  $shop,
+        ]);
+    }
+    ///
+    public function shopUpload(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'link_url' => 'string|max:500',
+            'status' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error' => $validator->errors()->all(),
+            ]);
+        }
+        try {
+            DB::beginTransaction();
+            $shop = new Shop();
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                $image->move(public_path('images'), $imageName);
+                $shop->image = $imageName;
+            }
+            $shop->status = $request->status;
+            $shop->link_url =  $request->link_url ?? null;
+            $shop->save();
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Upload shop successfully!',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+    ///
+    public function shopUpdate()
+    {
+        $shop = Shop::all();
+        return response()->json([
+            'success' => true,
+            'dataShop' => $shop,
+        ]);
+    }
+    ///
+    public function removeShopImg($id)
+    {
+        try {
+            DB::beginTransaction();
+            $shop = Shop::find($id);
+            if (!$shop) {
+                return response()->json([
+                    'success' => false,
+                    'error' => ['shop not found.']
+                ]);
+            }
+
+            $shop->delete();
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => ['shop deleted successfully.']
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'error' => ['Failed to shop section.']
+            ]);
+        }
+    }
+    ///
+    public function editShopView($id)
+    {
+        $Shop = Shop::find($id);
+        return response()->json([
+            'success' => true,
+            'dataShop' =>  $Shop
+        ]);
+    }
+    ///
+    public function handleUpdateShop(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error' => $validator->errors()->all(),
+            ]);
+        }
+        try {
+            DB::beginTransaction();
+            $shop = Shop::find($request->id);
+            if (!$shop) {
+                return response()->json([
+                    'success' => false,
+                    'erroe' => ['shop not found.']
+                ]);
+            }
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $fileName = time() . '_' . $image->getClientOriginalName();
+                $image->move(public_path('images'), $fileName);
+                $shop->image = $fileName;
+            }
+            $shop->status = $request->status;
+            $shop->link_url = $request->link_url;
+            $shop->save();
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => ['shop updated successfully!']
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'error' => ['Failed to updated shop.']
+            ]);
+        }
+    }
     public function getBag(Request $request)
     {
         $page = $request->input('page');
-        $sale = $request->input('sale');
-        $new = $request->input('new');
-        $instock = $request->input('instock');
-        $outofstock = $request->input('outofstock');
-        $priceFrom = $request->input('priceFrom');
-        $priceTo = $request->input('priceTo');
-        $search = $request->input('search');
         $perPage = 36;
         $query = Product::select(
             'products.id',
@@ -36,11 +174,12 @@ class ShopController extends Controller
             'products.price',
             'products.is_new',
             'products.class',
-            DB::raw('SUM(product_variants.quantity) as total_quantity'),
+            DB::raw('CAST(SUM(product_variants.quantity) AS UNSIGNED) as total_quantity'),
             'discounts.quantity as discount_quantity',
             'discounts.discount',
             'discounts.status',
-            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image1'),
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1 OFFSET 1) as image2')
         )
             ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
             ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
@@ -57,32 +196,6 @@ class ShopController extends Controller
                 'discounts.status'
             );
 
-        if ($sale === "true") {
-            $query->where('discounts.status', 'Active')
-                ->where('discounts.discount', '>', 0)
-                ->where('discounts.quantity', '>', 0);
-        }
-        if ($new === "true") {
-            $query->where('products.is_new', '=', 1);
-        }
-        if ($instock === "true") {
-            $query->havingRaw('total_quantity > 0');
-        }
-        if ($outofstock === "true") {
-            $query->havingRaw('total_quantity = 0');
-        }
-        if (is_numeric($priceFrom)) {
-            $query->where('products.price', '>=', $priceFrom);
-        }
-        if (is_numeric($priceTo)) {
-            $query->where('products.price', '<=', $priceTo);
-        }
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('products.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('products.description', 'LIKE', '%' . $search . '%');
-            });
-        }
         $query->orderBy('products.created_at', 'desc');
         $productViews = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
@@ -99,13 +212,6 @@ class ShopController extends Controller
     public function getHat(Request $request)
     {
         $page = $request->input('page');
-        $sale = $request->input('sale');
-        $new = $request->input('new');
-        $instock = $request->input('instock');
-        $outofstock = $request->input('outofstock');
-        $priceFrom = $request->input('priceFrom');
-        $priceTo = $request->input('priceTo');
-        $search = $request->input('search');
         $perPage = 36;
         $query = Product::select(
             'products.id',
@@ -114,11 +220,12 @@ class ShopController extends Controller
             'products.price',
             'products.is_new',
             'products.class',
-            DB::raw('SUM(product_variants.quantity) as total_quantity'),
+            DB::raw('CAST(SUM(product_variants.quantity) AS UNSIGNED) as total_quantity'),
             'discounts.quantity as discount_quantity',
             'discounts.discount',
             'discounts.status',
-            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image1'),
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1 OFFSET 1) as image2')
         )
             ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
             ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
@@ -135,32 +242,6 @@ class ShopController extends Controller
                 'discounts.status'
             );
 
-        if ($sale === "true") {
-            $query->where('discounts.status', 'Active')
-                ->where('discounts.discount', '>', 0)
-                ->where('discounts.quantity', '>', 0);
-        }
-        if ($new === "true") {
-            $query->where('products.is_new', '=', 1);
-        }
-        if ($instock === "true") {
-            $query->havingRaw('total_quantity > 0');
-        }
-        if ($outofstock === "true") {
-            $query->havingRaw('total_quantity = 0');
-        }
-        if (is_numeric($priceFrom)) {
-            $query->where('products.price', '>=', $priceFrom);
-        }
-        if (is_numeric($priceTo)) {
-            $query->where('products.price', '<=', $priceTo);
-        }
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('products.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('products.description', 'LIKE', '%' . $search . '%');
-            });
-        }
         $query->orderBy('products.created_at', 'desc');
         $productViews = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
@@ -177,13 +258,6 @@ class ShopController extends Controller
     public function getShoe(Request $request)
     {
         $page = $request->input('page');
-        $sale = $request->input('sale');
-        $new = $request->input('new');
-        $instock = $request->input('instock');
-        $outofstock = $request->input('outofstock');
-        $priceFrom = $request->input('priceFrom');
-        $priceTo = $request->input('priceTo');
-        $search = $request->input('search');
         $perPage = 36;
         $query = Product::select(
             'products.id',
@@ -192,11 +266,12 @@ class ShopController extends Controller
             'products.price',
             'products.is_new',
             'products.class',
-            DB::raw('SUM(product_variants.quantity) as total_quantity'),
+            DB::raw('CAST(SUM(product_variants.quantity) AS UNSIGNED) as total_quantity'),
             'discounts.quantity as discount_quantity',
             'discounts.discount',
             'discounts.status',
-            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image1'),
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1 OFFSET 1) as image2')
         )
             ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
             ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
@@ -213,32 +288,6 @@ class ShopController extends Controller
                 'discounts.status'
             );
 
-        if ($sale === "true") {
-            $query->where('discounts.status', 'Active')
-                ->where('discounts.discount', '>', 0)
-                ->where('discounts.quantity', '>', 0);
-        }
-        if ($new === "true") {
-            $query->where('products.is_new', '=', 1);
-        }
-        if ($instock === "true") {
-            $query->havingRaw('total_quantity > 0');
-        }
-        if ($outofstock === "true") {
-            $query->havingRaw('total_quantity = 0');
-        }
-        if (is_numeric($priceFrom)) {
-            $query->where('products.price', '>=', $priceFrom);
-        }
-        if (is_numeric($priceTo)) {
-            $query->where('products.price', '<=', $priceTo);
-        }
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('products.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('products.description', 'LIKE', '%' . $search . '%');
-            });
-        }
         $query->orderBy('products.created_at', 'desc');
         $productViews = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
@@ -255,13 +304,6 @@ class ShopController extends Controller
     public function getAccessory(Request $request)
     {
         $page = $request->input('page');
-        $sale = $request->input('sale');
-        $new = $request->input('new');
-        $instock = $request->input('instock');
-        $outofstock = $request->input('outofstock');
-        $priceFrom = $request->input('priceFrom');
-        $priceTo = $request->input('priceTo');
-        $search = $request->input('search');
         $perPage = 36;
         $query = Product::select(
             'products.id',
@@ -270,11 +312,12 @@ class ShopController extends Controller
             'products.price',
             'products.is_new',
             'products.class',
-            DB::raw('SUM(product_variants.quantity) as total_quantity'),
+            DB::raw('CAST(SUM(product_variants.quantity) AS UNSIGNED) as total_quantity'),
             'discounts.quantity as discount_quantity',
             'discounts.discount',
             'discounts.status',
-            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image1'),
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1 OFFSET 1) as image2')
         )
             ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
             ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
@@ -290,33 +333,6 @@ class ShopController extends Controller
                 'discounts.discount',
                 'discounts.status'
             );
-
-        if ($sale === "true") {
-            $query->where('discounts.status', 'Active')
-                ->where('discounts.discount', '>', 0)
-                ->where('discounts.quantity', '>', 0);
-        }
-        if ($new === "true") {
-            $query->where('products.is_new', '=', 1);
-        }
-        if ($instock === "true") {
-            $query->havingRaw('total_quantity > 0');
-        }
-        if ($outofstock === "true") {
-            $query->havingRaw('total_quantity = 0');
-        }
-        if (is_numeric($priceFrom)) {
-            $query->where('products.price', '>=', $priceFrom);
-        }
-        if (is_numeric($priceTo)) {
-            $query->where('products.price', '<=', $priceTo);
-        }
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('products.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('products.description', 'LIKE', '%' . $search . '%');
-            });
-        }
         $query->orderBy('products.created_at', 'desc');
         $productViews = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
@@ -333,13 +349,6 @@ class ShopController extends Controller
     public function getClothe(Request $request)
     {
         $page = $request->input('page');
-        $sale = $request->input('sale');
-        $new = $request->input('new');
-        $instock = $request->input('instock');
-        $outofstock = $request->input('outofstock');
-        $priceFrom = $request->input('priceFrom');
-        $priceTo = $request->input('priceTo');
-        $search = $request->input('search');
         $perPage = 36;
         $query = Product::select(
             'products.id',
@@ -348,11 +357,12 @@ class ShopController extends Controller
             'products.price',
             'products.is_new',
             'products.class',
-            DB::raw('SUM(product_variants.quantity) as total_quantity'),
+            DB::raw('CAST(SUM(product_variants.quantity) AS UNSIGNED) as total_quantity'),
             'discounts.quantity as discount_quantity',
             'discounts.discount',
             'discounts.status',
-            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image1'),
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1 OFFSET 1) as image2')
         )
             ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
             ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
@@ -369,32 +379,6 @@ class ShopController extends Controller
                 'discounts.status'
             );
 
-        if ($sale === "true") {
-            $query->where('discounts.status', 'Active')
-                ->where('discounts.discount', '>', 0)
-                ->where('discounts.quantity', '>', 0);
-        }
-        if ($new === "true") {
-            $query->where('products.is_new', '=', 1);
-        }
-        if ($instock === "true") {
-            $query->havingRaw('total_quantity > 0');
-        }
-        if ($outofstock === "true") {
-            $query->havingRaw('total_quantity = 0');
-        }
-        if (is_numeric($priceFrom)) {
-            $query->where('products.price', '>=', $priceFrom);
-        }
-        if (is_numeric($priceTo)) {
-            $query->where('products.price', '<=', $priceTo);
-        }
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('products.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('products.description', 'LIKE', '%' . $search . '%');
-            });
-        }
         $query->orderBy('products.created_at', 'desc');
         $productViews = $query->skip(($page - 1) * $perPage)
             ->take($perPage)

@@ -1,7 +1,9 @@
 <template>
     <div class="lg:flex">
         <div class="lg:w-1/2 xl:max-w-screen-sm">
-            <div class="sm:px-24 mt-0 md:px-48 pt-10 lg:px-12 lg:mt-6 xl:px-24">
+            <div
+                class="sm:px-24 px-5 mt-0 md:px-48 pt-10 lg:px-12 lg:mt-6 xl:px-24"
+            >
                 <h2
                     class="text-center flex justify-center text-4xl font-display font-semibold xl:text-4xl xl:text-bold"
                 >
@@ -28,168 +30,90 @@
                         >
                             <div class="-mx-3">
                                 <div class="md:w-full px-3">
-                                    <label
-                                        class="block text-sm font-bold tracking-wide text-gray-700 mb-2"
-                                        for="fullname"
-                                    >
-                                        Full Name
-                                    </label>
                                     <input
-                                        v-model="fullname"
-                                        class="text-sm appearance-none block w-full bg-grey-lighter text-grey-darker border border-grey-lighter rounded py-2 px-4 mb-2"
                                         type="text"
-                                        placeholder="Enter Your Name"
+                                        name="fullname"
+                                        id="fullname"
+                                        v-model="fullname"
+                                        class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                        placeholder="Full Name"
                                     />
-                                </div>
-                                <div class="md:w-full px-3">
-                                    <label
-                                        class="block text-sm font-bold tracking-wider text-gray-700 mb-2"
-                                        for="email"
-                                    >
-                                        Email Address
-                                    </label>
                                     <input
-                                        class="appearance-none text-sm block w-full bg-grey-lighter text-grey-darker border border-grey-lighter rounded py-2 px-4 mb-3"
                                         v-model="email"
                                         name="email"
                                         type="text"
-                                        placeholder="Enter Your Email"
+                                        class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                        placeholder=" Email Address"
                                     />
-                                </div>
-                                <div class="md:w-full px-3">
-                                    <label
-                                        class="block text-sm font-bold tracking-wide text-gray-700 mb-2"
-                                        for="phone"
-                                    >
-                                        Phone Number
-                                    </label>
                                     <input
-                                        class="appearance-none block w-full bg-grey-lighter text-sm text-grey-darker border border-grey-lighter rounded py-2 px-4 mb-3"
                                         id="phone"
                                         name="phone"
                                         type="tphoneext"
                                         placeholder="Enter Your Phone Number"
                                         v-model="phone"
+                                        class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                    />
+                                    <input
+                                        id="address"
+                                        name="address"
+                                        type="text"
+                                        placeholder="Enter Your Address"
+                                        v-model="address"
+                                        class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                                     />
                                 </div>
                             </div>
                             <div class="flex justify-between">
-                                <div>
-                                    <div class="">
-                                        <label
-                                            class="block text-sm font-bold tracking-wide text-gray-700 mb-2"
-                                            for="birthday"
-                                        >
-                                            Birthday
-                                        </label>
-                                        <input
-                                            class="appearance-none block w-full bg-grey-lighter text-sm text-grey-darker border border-grey-lighter rounded py-2 px-6 sm:px-8 lg:px-8 mb-3"
-                                            id="birthday"
-                                            name="birthday"
-                                            type="date"
-                                            placeholder="Enter Your Phone Number"
-                                            v-model="birthday"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="w-full mr-5">
-                                        <label
-                                            class="block text-sm font-bold tracking-wide text-gray-700 mb-2"
-                                            for="gender"
-                                        >
-                                            Gender
-                                        </label>
-                                        <div class="">
-                                            <select
-                                                id="gender"
-                                                for="gender"
-                                                name="gender"
-                                                v-model="gender"
-                                                class="block w-full px-4 sm:px-5 lg:px-5 pt-2 pb-3 text-sm text-grey-darker border border-grey-lighter rounded focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            >
-                                                <option
-                                                    hidden
-                                                    selected
-                                                    disabled
-                                                >
-                                                    Choose a gender
-                                                </option>
-                                                <option
-                                                    for="gender"
-                                                    value="Male"
-                                                >
-                                                    Male
-                                                </option>
-                                                <option
-                                                    for="gender"
-                                                    value="Female"
-                                                >
-                                                    Female
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+                                <input
+                                    class="appearance-none mr-1 border-gray-400 block w-full bg-grey-lighter text-sm text-grey-darker border border-grey-lighter rounded py-2 px-6 sm:px-8 lg:px-8 mb-3"
+                                    id="birthday"
+                                    name="birthday"
+                                    type="date"
+                                    placeholder="Enter Your Phone Number"
+                                    v-model="birthday"
+                                />
+                                <select
+                                    id="gender"
+                                    for="gender"
+                                    name="gender"
+                                    v-model="gender"
+                                    class="appearance-none border-gray-400 block w-full bg-grey-lighter text-sm text-grey-darker border border-grey-lighter rounded py-2 px-6 sm:px-8 lg:px-8 mb-3"
+                                >
+                                    <option hidden selected disabled>
+                                        Choose a gender
+                                    </option>
+                                    <option for="gender" value="Male">
+                                        Male
+                                    </option>
+                                    <option for="gender" value="Female">
+                                        Female
+                                    </option>
+                                </select>
                             </div>
                             <div class="inline-table">
                                 <div class="-mx-3 mb-3">
                                     <div class="md:w-full px-3">
-                                        <label
-                                            class="tracking-wide text-gray-700 text-sm font-bold mb-2"
-                                            for="password"
-                                        >
-                                            Password
-                                        </label>
                                         <input
-                                            class="appearance-none block w-full bg-grey-lighter text-grey-darker border border-grey-lighter rounded py-2 px-4"
                                             id="password"
                                             name="password"
                                             type="password"
-                                            placeholder="*********"
+                                            placeholder="Password"
                                             v-model="password"
+                                            class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                                         />
-                                    </div>
-                                </div>
-                                <div class="-mx-3 md:flex mb-6">
-                                    <div class="md:w-full px-3">
-                                        <label
-                                            class="tracking-wide text-gray-700 text-sm font-bold mb-2"
-                                            for="confirm_password"
-                                        >
-                                            Confirm Password
-                                        </label>
                                         <input
-                                            class="appearance-none block w-full bg-grey-lighter text-gray-700 border border-grey-lighter rounded py-2 px-4 mb-3"
                                             id="confirm_password"
                                             name="confirm_password"
-                                            type="text"
-                                            placeholder="*********"
+                                            type="password"
+                                            placeholder="Confirm password"
                                             v-model="confirm_password"
+                                            class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                                         />
                                         <p class="text-gray-600 text-xs italic">
                                             Make it as long and as crazy as
                                             you'd like
                                         </p>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="-mx-3 md:flex mb-2">
-                                <div class="md:w-full px-3 mb-6 md:mb-0">
-                                    <label
-                                        class="block tracking-wide text-gray-700 text-sm font-bold mb-2"
-                                        for="address"
-                                    >
-                                        Address
-                                    </label>
-                                    <input
-                                        class="appearance-none text-sm block w-full bg-grey-lighter text-grey-darker border border-grey-lighter rounded py-2 px-4"
-                                        id="address"
-                                        name="address"
-                                        type="text"
-                                        placeholder="Enter Your Address"
-                                        v-model="address"
-                                    />
                                 </div>
                             </div>
                             <div

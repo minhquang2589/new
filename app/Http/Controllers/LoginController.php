@@ -56,7 +56,6 @@ class LoginController extends Controller
             ]);
         }
     }
-
     //
     public function checkAuth()
     {
@@ -73,7 +72,6 @@ class LoginController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
     ///
     public function logout(Request $request)
     {
@@ -93,6 +91,7 @@ class LoginController extends Controller
             return response()->json([
                 'name' => $user->name,
                 'role' => $user->role,
+                'user' => $user,
             ]);
         } else {
             return response()->json(null, 200);

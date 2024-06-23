@@ -5,7 +5,7 @@
                 class="py-12 lg:bg-white flex justify-center lg:justify-start lg:px-12"
             ></div>
             <div
-                class="mt-10 px-12 sm:px-24 md:px-48 lg:px-12 lg:mt-16 xl:px-24 xl:max-w-2xl"
+                class="mt-10 px-6 sm:px-24 md:px-48 lg:px-12 lg:mt-16 xl:px-24 xl:max-w-2xl"
             >
                 <h2
                     class="text-center flex justify-center text-4xl text-gray-800 font-display font-semibold lg:text-left xl:text-4xl xl:text-bold"
@@ -26,42 +26,21 @@
                         </router-link>
                     </ul>
                 </div>
-                <div class="mt-12 bg-white shadow-md px-8 pt-6 pb-8 mb-4">
+                <div class="mt-12 bg-white shadow-md px-5 pt-6 pb-8 mb-4">
                     <form @submit.prevent="login">
                         <div>
-                            <div
-                                class="text-sm font-bold text-gray-700 tracking-wide"
-                            >
-                                Email Address
-                            </div>
                             <input
-                                class="w-full text-sm py-2 border-b border-gray-300 focus:outline-none focus:border-gray-800"
                                 type="email"
                                 v-model="email"
-                                placeholder="mike@gmail.com"
+                                placeholder="Enter your email"
+                                class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                             />
-                        </div>
-                        <div class="mt-8">
-                            <div class="flex justify-between items-center">
-                                <div
-                                    class="text-sm font-bold text-gray-700 tracking-wide"
-                                >
-                                    Password
-                                </div>
-                                <div>
-                                    <a
-                                        href="/forgotpassword"
-                                        class="text-xs font-display font-semibold text-red-600 hover:text-red-800 cursor-pointer"
-                                    >
-                                        Forgot Password?
-                                    </a>
-                                </div>
-                            </div>
+
                             <input
-                                class="w-full text-sm py-2 border-b border-gray-300 focus:outline-none focus:border-gray-800"
                                 type="password"
                                 v-model="password"
                                 placeholder="Enter your password"
+                                class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                             />
                         </div>
                         <div
@@ -77,7 +56,7 @@
                                 </li>
                             </ul>
                         </div>
-                        <div class="mt-10">
+                        <div class="mt-6">
                             <button
                                 type="submit"
                                 class="bg-gray-700 text-gray-100 p-4 w-full rounded-full tracking-wide font-semibold font-display focus:outline-none focus:shadow-outline hover:bg-gray-800 shadow-lg"
@@ -122,7 +101,7 @@
 </template>
 <script>
 import axios from "axios";
-import { useRouter } from "vue-router";
+import { mapGetters, mapMutations, mapActions } from "vuex";
 
 export default {
     name: "Login",
@@ -133,12 +112,10 @@ export default {
             errorMessages: [],
         };
     },
-    setup() {
-        const router = useRouter();
-        return { router };
-    },
     methods: {
+        ...mapActions(["fetchUser"]),
         login() {
+            this.errorMessages = [];
             axios
                 .post("/api/login", {
                     email: this.email,
@@ -147,20 +124,19 @@ export default {
                 .then((response) => {
                     if (response.data.success) {
                         if (response.data.role === "admin") {
-                            this.router.push({ name: "Dashboard" });
+                            this.fetchUser();
+                            this.$router.push({ name: "Dashboard" });
                         } else {
-                            this.router.push({ name: "Home" });
+                            this.$router.push({ name: "Home" });
                         }
                     } else {
                         this.errorMessages = response.data.errors;
-                        // console.error(response.data.errors);
                     }
                 })
                 .catch((error) => {
                     this.errorMessages = [
                         "An error occurred while logging in.",
                     ];
-                    // console.error(error);
                 });
         },
     },

@@ -1,14 +1,15 @@
 <template>
-    <div>
-       
-        <Header v-if="!$route.meta.hideHeaderFooter" />
-        <Section v-if="$route.meta.showSection" />
+    <div id="main_content">
+        <Header v-if="!$route.meta.hideHeader" />
+        <Shop v-if="$route.meta.showShop" />
+        <!-- <discountSection v-if="$route.meta.showDiscountSection" /> -->
+        <!-- <Section v-if="$route.meta.showSection" /> -->
         <Slider v-if="$route.meta.showSlider" />
-        <SliderSale v-if="$route.meta.showSliderSale" />
         <main>
             <router-view />
         </main>
-        <Footer v-if="!$route.meta.hideHeaderFooter" />
+        <Footer v-if="!$route.meta.hideFooter" />
+        
     </div>
 </template>
 
@@ -19,6 +20,8 @@ import Section from "@/components/section/Section.vue";
 import Slider from "@/components/slider/Slider.vue";
 import SliderSale from "@/components/slider/SliderSale.vue";
 import Product from "@/components/product/Product.vue";
+import Shop from "@/components/shop/Shop.vue";
+import discountSection from "../components/section/discountSection.vue";
 
 export default {
     components: {
@@ -28,7 +31,8 @@ export default {
         SliderSale,
         Slider,
         Product,
+        Shop,
+        discountSection,
     },
 };
 </script>
-

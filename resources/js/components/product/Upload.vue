@@ -1,141 +1,65 @@
 <template>
     <div class="w-fit flex justify-center items-center ml-3">
         <Dashboard page-title="Product - Upload">
-            <form @submit.prevent="upload">
+            <form class="max-w-md mx-auto" @submit.prevent="upload">
+                <div class="max-w-lg">
+                    <div class="my-5">
+                        <div
+                            v-if="productImage.length"
+                            class="grid gap-1 grid-cols-3"
+                        >
+                            <div
+                                v-for="(item, index) in productImage"
+                                :key="index"
+                                class="mr-2"
+                            >
+                                <img
+                                    class="size-28"
+                                    :src="`${item.image}`"
+                                    :alt="`${item.image}`"
+                                />
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            @click="triggerFileInput"
+                            class="underline mt-4 hover:text-blue-600"
+                        >
+                            Add images
+                        </button>
+                        <input
+                            ref="fileInput"
+                            @change="handleImageUpload"
+                            class="hidden"
+                            aria-describedby="images"
+                            for="images"
+                            type="file"
+                            id="image-input"
+                            name="images[]"
+                            multiple
+                        />
+                    </div>
+                </div>
                 <div class="relative z-0 mb-5 mt-4 group">
                     <input
                         type="text"
                         name="product_name"
                         id="product_name"
                         v-model="product_name"
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                        placeholder="Product name"
                     />
-                    <label
-                        for="product_name"
-                        name="product_name"
-                        class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >Product Name</label
-                    >
-                </div>
-                <div class="relative z-0 w-full mb-2 group">
                     <input
                         require
                         type="text"
                         name="price"
                         id="price"
                         v-model="price"
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                        placeholder="Price"
+                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                     />
-                    <label
-                        for="price"
-                        name="price"
-                        class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >Price</label
-                    >
                 </div>
-                <div class="relative z-0 w-full mt-4 mb-5 group">
-                    <input
-                        type="text"
-                        name="detail1"
-                        id="detail1"
-                        v-model="detail1"
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    />
-                    <label
-                        for="detail1"
-                        name="detail1"
-                        class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >miêu tả</label
-                    >
-                </div>
-                <div class="relative z-0 w-full mb-5 group">
-                    <input
-                        type="text"
-                        name="detail2"
-                        id="detail2"
-                        v-model="detail2"
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    />
-                    <label
-                        for="detail2"
-                        name="detail2"
-                        class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >đặc điểm 1</label
-                    >
-                </div>
-                <div class="relative z-0 w-full mb-5 group">
-                    <input
-                        type="text"
-                        name="detail3"
-                        id="detail3"
-                        v-model="detail3"
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    />
-                    <label
-                        for="detail3"
-                        name="detail3"
-                        class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >đặc điểm 2</label
-                    >
-                </div>
-                <div class="relative z-0 w-full mb-5 group">
-                    <input
-                        type="text"
-                        name="detail4"
-                        id="detail4"
-                        v-model="detail4"
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    />
-                    <label
-                        for="detail4"
-                        name="detail4"
-                        class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >đặc điểm 3</label
-                    >
-                </div>
-                <div class="relative z-0 w-full mb-5 group">
-                    <input
-                        type="text"
-                        name="detail5"
-                        id="detail5"
-                        v-model="detail5"
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    />
-                    <label
-                        for="detail5"
-                        name="detail5"
-                        class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >đặc điểm 4
-                    </label>
-                </div>
-                <div class="relative z-0 w-full mb-5 group">
-                    <input
-                        type="text"
-                        name="detail6"
-                        id="detail6"
-                        v-model="detail6"
-                        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    />
-                    <label
-                        for="detail6"
-                        name="detail6"
-                        class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >đặc điểm 5</label
-                    >
-                </div>
-                <div class="form-group flex">
-                    <label>
-                        <input
-                            class="size-4 rounded border-gray-300"
-                            type="checkbox"
-                            name="is_new"
-                            v-model="is_new"
-                        />
-                        <span class="text-red-600 ml-3"
-                            ><strong>New</strong></span
-                        >
-                    </label>
-                </div>
+
                 <div class="mt-4">
                     <div class="w-full mr-5">
                         <div class="">
@@ -179,7 +103,9 @@
                                 <option for="class" value="bag">bag</option>
                                 <option for="class" value="hat">hat</option>
                                 <option for="class" value="shoe">shoe</option>
-                                <option for="class" value="accessory">accessory</option>
+                                <option for="class" value="accessory">
+                                    accessory
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -208,74 +134,135 @@
                     />
                     <br />
                     <div class="flex my-3">
-                        <input
-                            type="number"
-                            name="discountnumber"
-                            placeholder="Discount %"
-                            min="1"
-                            max="100"
-                            v-model="discountnumber"
-                            oninput="validity.valid||(value='');"
-                            class="w-2/3 px-3 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600"
-                        />
-                        |
-                        <input
-                            type="number"
-                            name="discountquantity"
-                            placeholder="Discount Quantity"
-                            min="0"
-                            v-model="discountquantity"
-                            oninput="validity.valid||(value='');"
-                            class="w-2/3 px-3 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600"
-                        />
+                        <label
+                            for="Username"
+                            class="relative mr-1 w-full block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+                        >
+                            <input
+                                type="number"
+                                name="discountnumber"
+                                placeholder="Discount %"
+                                min="1"
+                                max="100"
+                                v-model="discountnumber"
+                                oninput="validity.valid||(value='');"
+                                class="peer border-none w-full py-1 bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            />
+                            <span
+                                class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                            >
+                                Discount %
+                            </span>
+                        </label>
+                        <label
+                            for="Username"
+                            class="relative w-full block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+                        >
+                            <input
+                                type="number"
+                                name="discountquantity"
+                                placeholder="Discount Quantity"
+                                min="0"
+                                v-model="discountquantity"
+                                oninput="validity.valid||(value='');"
+                                class="peer border-none w-full py-1 bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            />
+                            <span
+                                class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                            >
+                                Discount Quantity
+                            </span>
+                        </label>
                     </div>
                 </div>
-                <div class="max-w-lg">
-                    <label
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        for="image"
-                        >Images</label
-                    >
+
+                <div
+                    class="relative z-0 w-full mb-2 mt-3 group"
+                    v-for="(detail, index) in details"
+                    :key="index"
+                >
                     <input
-                        require
-                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                        aria-describedby="images"
-                        for="images"
-                        type="file"
-                        id="image-input"
-                        name="images[]"
-                        multiple
-                        @change="handleImageUpload"
+                        type="text"
+                        :name="'detail' + index"
+                        :id="'detail' + index"
+                        v-model="details[index]"
+                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                        placeholder="Detail"
                     />
                 </div>
+                <button
+                    class="underline hover:text-blue-600"
+                    type="button"
+                    @click="addDetailInput"
+                >
+                    Add Detail
+                </button>
                 <div class="colorInputs mt-3" id="colorInputs">
                     <div
                         v-for="(color, colorIndex) in colors"
                         :key="colorIndex"
                     >
-                        <label>
-                            Color:
-                            <input type="text" v-model="color.name" />
-                        </label>
-                        <br />
+                        <div>
+                            <label
+                                for="color"
+                                class="block text-xs font-medium text-gray-700"
+                            >
+                                Color
+                            </label>
+                            <input
+                                type="text"
+                                v-model="color.name"
+                                class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                            />
+                        </div>
                         <div
                             v-for="(size, sizeIndex) in color.sizes"
                             :key="sizeIndex"
                         >
-                            <label>
-                                Size {{ size.name }}:
-                                <input type="number" v-model="size.quantity" />
-                            </label>
-                            <br />
+                            <div class="grid gap-1 grid-cols-2">
+                                <div>
+                                    <label
+                                        for="color"
+                                        class="block text-xs font-medium text-gray-700"
+                                    >
+                                        Size
+                                    </label>
+                                    <input
+                                        type="text"
+                                        v-model="size.name"
+                                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                                    />
+                                </div>
+                                <div>
+                                    <label
+                                        for="color"
+                                        class="block text-xs font-medium text-gray-700"
+                                    >
+                                        Quantity
+                                    </label>
+                                    <input
+                                        type="number"
+                                        v-model="size.quantity"
+                                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                                    />
+                                </div>
+                            </div>
                         </div>
+                        <button
+                            @click="addSizeInput(colorIndex)"
+                            class="underline hover:text-blue-600"
+                            type="button"
+                        >
+                            Add size
+                        </button>
                     </div>
                 </div>
                 <button
-                    class="block mr-2 rounded-xl bg-gray-400 px-8 py-1 text-sm text-white transition hover:bg-gray-500"
+                    class="underline hover:text-blue-600"
                     type="button"
                     @click="addColorInput"
                 >
-                    Add color and quantity
+                    Add Color
                 </button>
                 <div class="mt-3">
                     <textarea
@@ -284,6 +271,19 @@
                         v-model="description"
                         id="editor"
                     ></textarea>
+                </div>
+                <div class="form-group my-4 flex">
+                    <label>
+                        <input
+                            class="size-4 rounded border-gray-300"
+                            type="checkbox"
+                            name="is_new"
+                            v-model="is_new"
+                        />
+                        <span class="text-red-600 ml-3"
+                            ><strong>New</strong></span
+                        >
+                    </label>
                 </div>
                 <div
                     v-if="errorMessages.length"
@@ -332,23 +332,12 @@ export default {
             colors: [
                 {
                     name: "",
-                    sizes: [
-                        { name: "S", quantity: null },
-                        { name: "M", quantity: null },
-                        { name: "L", quantity: null },
-                        { name: "XL", quantity: null },
-                        { name: "2XL", quantity: null },
-                    ],
+                    sizes: [{ name: "", quantity: null }],
                 },
             ],
             product_name: "",
             price: "",
-            detail1: "",
-            detail2: "",
-            detail3: "",
-            detail4: "",
-            detail5: "",
-            detail6: "",
+            details: [],
             is_new: false,
             description: "",
             gender: "",
@@ -359,6 +348,7 @@ export default {
             imageUrl: "",
             class: "",
             images: [],
+            productImage: [],
         };
     },
     mounted() {
@@ -381,14 +371,22 @@ export default {
                 console.error(error);
             });
     },
-
     methods: {
+        triggerFileInput() {
+            this.$refs.fileInput.click();
+        },
         handleImageUpload(event) {
             const files = event.target.files;
-            this.images = [];
             for (let i = 0; i < files.length; i++) {
-                this.images.push(files[i]);
+                this.productImage.push({
+                    image: URL.createObjectURL(files[i]),
+                    url: files[i],
+                });
             }
+            this.images = this.productImage.map((item) => item.url);
+         },
+        addDetailInput() {
+            this.details.push("");
         },
         showNotification(message) {
             const notification = document.createElement("div");
@@ -415,12 +413,9 @@ export default {
             formData.append("product_name", this.product_name);
             formData.append("price", this.price);
             formData.append("class", this.class);
-            formData.append("detail1", this.detail1);
-            formData.append("detail2", this.detail2);
-            formData.append("detail3", this.detail3);
-            formData.append("detail4", this.detail4);
-            formData.append("detail5", this.detail5);
-            formData.append("detail6", this.detail6);
+            for (let i = 0; i < this.details.length; i++) {
+                formData.append("details[]", this.details[i]);
+            }
             formData.append("is_new", this.is_new ? 1 : 0);
             formData.append("description", this.description);
             formData.append("gender", this.gender);
@@ -439,7 +434,7 @@ export default {
                     },
                 })
                 .then((response) => {
-                    console.log(response.data);
+                    // console.log(response.data);
                     if (response.data.success == true) {
                         this.showNotification(response.data.message);
                     } else {
@@ -453,14 +448,11 @@ export default {
         addColorInput() {
             this.colors.push({
                 name: "",
-                sizes: [
-                    { name: "S", quantity: null },
-                    { name: "M", quantity: null },
-                    { name: "L", quantity: null },
-                    { name: "XL", quantity: null },
-                    { name: "2XL", quantity: null },
-                ],
+                sizes: [{ name: "", quantity: null }],
             });
+        },
+        addSizeInput(colorIndex) {
+            this.colors[colorIndex].sizes.push({ name: "", quantity: null });
         },
     },
 };

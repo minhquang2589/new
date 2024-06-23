@@ -1,18 +1,20 @@
 <template>
     <header class="z-10 w-full">
-        <div v-if="isAdmin">
-            <AdminHeader :isAdmin="isAdmin" />
+        <div v-if="isAdmin && userData">
+            <AdminHeader />
         </div>
-        <div class="filter_table">
-            <div v-if="isFilterOpen">
-                <FilterMobile :toggleFilter="toggleFilter" />
-            </div>
+        <div v-show="isFilterOpen" class="overlay" @click="toggleFilter"></div>
+        <div :class="{ 'view-cart-open': isFilterOpen }" class="view-cart">
+            <FilterMobile :toggleFilter="toggleFilter" />
         </div>
-        <transition-group name="fade">
-            <div v-if="isViewCartOpen" key="viewCart" class="z-50 showViewCart">
-                <ViewCart :toggleViewCart="toggleViewCart" />
-            </div>
-        </transition-group>
+        <div
+            v-show="isViewCartOpen"
+            class="overlay"
+            @click="toggleViewCart"
+        ></div>
+        <div :class="{ 'view-cart-open': isViewCartOpen }" class="view-cart">
+            <ViewCart :toggleViewCart="toggleViewCart" />
+        </div>
         <div class="mx-auto max-w-screen-xl px-6 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between">
                 <div class="md:flex md:items-center mr-12 md:gap-12">
@@ -83,9 +85,7 @@
                                 </div>
                             </li>
                             <li class="dropdown-1">
-                                <span class="hover:text-gray-800 hover:underline"
-                                    >Shop
-                                </span>
+                                <span>Shop </span>
 
                                 <div
                                     id="dropdownMenu-1"
@@ -119,14 +119,13 @@
                                             >Accessory</a
                                         >
                                     </router-link>
-                                      <router-link to="/product/clothes">
+                                    <router-link to="/product/clothes">
                                         <a
                                             class="dropdown-option-1 hover:text-gray-800"
                                             href="#"
                                             >Clothes</a
                                         >
                                     </router-link>
-                                    
                                 </div>
                             </li>
                             <li>
@@ -135,7 +134,7 @@
                                         class="hover:text-gray-800 hover:underline"
                                         href="#"
                                     >
-                                        About
+                                        Store
                                     </a>
                                 </router-link>
                             </li>
@@ -154,9 +153,32 @@
                                     <a
                                         class="hover:text-gray-800 hover:underline"
                                         href="#"
-                                        >contact
+                                        >Contact
                                     </a>
                                 </router-link>
+                            </li>
+                            <li class="dropdown-1">
+                                <span>Features </span>
+
+                                <div
+                                    id="dropdownMenu-1"
+                                    class="dropdown-menu-1"
+                                >
+                                    <router-link to="/video">
+                                        <a
+                                            class="dropdown-option-1 hover:text-gray-800"
+                                            href="#"
+                                            >Video</a
+                                        >
+                                    </router-link>
+                                    <router-link to="/lookbook">
+                                        <a
+                                            class="dropdown-option-1 hover:text-gray-800"
+                                            href="#"
+                                            >Lookbook</a
+                                        >
+                                    </router-link>
+                                </div>
                             </li>
                         </ul>
                     </nav>
@@ -167,16 +189,8 @@
                     <div
                         class="rounded-2xl flex relative mt-2 lg:p-0 sm:p-0 py-2 text-sm font-medium transition sm:gap-1"
                     >
-                        <div class="flex">
-                            <div
-                                class="mt-1.5 mr-1 transform hidden lg:block text-xl font-medium"
-                            >
-                                Cart
-                            </div>
-                            <div
-                                @mouseenter="openCart"
-                                class="mb-3 relative flex items-center"
-                            >
+                        <div class="flex lg:mr-2 mr-0">
+                            <div class="mb-3 relative flex items-center">
                                 <button @click="toggleViewCart">
                                     <svg
                                         class="h-8 w-8 hover:cursor-pointer"
@@ -197,6 +211,7 @@
                                 </button>
                             </div>
                         </div>
+
                         <div class="hover:cursor-pointer filter-button ml-5">
                             <button @click="toggleFilter">
                                 <div class="mt-2 relative flex items-center">
@@ -214,58 +229,26 @@
                             </button>
                         </div>
                     </div>
-                    <div id="cart-view" class="" style="display: none">
-                        <div
-                            class="flex justify-end mr-5 mt-4 hover:cursor-pointer"
+                    <div
+                        @click="showSearch = true"
+                        class="hover:cursor-pointer lg:ml-2 ml-3"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
                         >
-                            <button
-                                class="z-50 closecart"
-                                onclick="closeCart()"
-                            >
-                                <p
-                                    class="border-slate-400 hover:border-slate-900 rounded border px-1"
-                                >
-                                    X
-                                </p>
-                            </button>
-                        </div>
-                        <div class="mb-4">
-                            <p
-                                class="text-sm text-center font-bold text-gray-700"
-                            >
-                                Shopping Cart
-                            </p>
-                        </div>
-                        <span class="flex mt-1 mb items-center">
-                            <span class="h-px flex-1 bg-gray-300"></span>
-                        </span>
-                        <div id="cartItems"></div>
-                        <div class="mt-5 flex justify-center">
-                            <a
-                                href="/cart"
-                                type="submit"
-                                class="flex justify-center w-4/6 rounded-lg bg-black px-10 py-1 font-medium text-white"
-                            >
-                                View Cart
-                            </a>
-                        </div>
-                        <div class="mt-1 flex justify-center mb-8">
-                            <a
-                                href="/checkout"
-                                type="submit"
-                                class="flex justify-center w-4/6 rounded-lg bg-black px-10 py-1 font-medium text-white"
-                            >
-                                Check Out
-                            </a>
-                        </div>
+                            <path
+                                d="M23.809 21.646l-6.205-6.205c1.167-1.605 1.857-3.579 1.857-5.711 0-5.365-4.365-9.73-9.731-9.73-5.365 0-9.73 4.365-9.73 9.73 0 5.366 4.365 9.73 9.73 9.73 2.034 0 3.923-.627 5.487-1.698l6.238 6.238 2.354-2.354zm-20.955-11.916c0-3.792 3.085-6.877 6.877-6.877s6.877 3.085 6.877 6.877-3.085 6.877-6.877 6.877c-3.793 0-6.877-3.085-6.877-6.877z"
+                            />
+                        </svg>
                     </div>
                 </div>
             </div>
         </div>
-        <span class="flex items-center">
-            <span class="h-px flex-1 bg-gray-400"></span>
-        </span>
     </header>
+    <SearchProduct :show="showSearch" @close="showSearch = false" />
 </template>
 <script>
 import { inject, onMounted } from "vue";
@@ -273,6 +256,9 @@ import { mapGetters, mapMutations, mapActions } from "vuex";
 import AdminHeader from "@/components/AdminHeader.vue";
 import FilterMobile from "@/components/layout/FilterMobile.vue";
 import ViewCart from "@/components/layout/ViewCart.vue";
+import SearchProduct from "../components/search/SearchProduct.vue";
+import Filter from "../components/layout/Filter.vue";
+
 import axios from "axios";
 export default {
     name: "Header",
@@ -281,92 +267,54 @@ export default {
         AdminHeader,
         FilterMobile,
         ViewCart,
+        SearchProduct,
+        Filter,
     },
     data() {
         return {
-            userData: null,
-            isAdmin: false,
             isFilterOpen: false,
             isViewCartOpen: false,
+            showSearch: false,
         };
     },
     created() {
-        this.getUserData();
         this.fetchCartQuantity();
     },
     computed: {
-        ...mapGetters(["cart", "cartData"]),
-        ...mapGetters(["cartQuantity"]),
-        filterVisibility() {
-            return this.isFilterOpen ? "block" : "none";
-        },
-        ViewCartVisibility() {
-            return this.isViewCartOpen ? "block" : "none";
-        },
+        ...mapGetters([
+            "cart",
+            "cartData",
+            "userData",
+            "cartQuantity",
+            "isAdmin",
+        ]),
     },
     methods: {
         ...mapActions(["fetchCart", "fetchCartData", "fetchCartQuantity"]),
-
         toggleFilter() {
             this.isFilterOpen = !this.isFilterOpen;
         },
         toggleViewCart() {
-            // this.$emit("open-view-cart");
             this.isViewCartOpen = !this.isViewCartOpen;
             this.fetchCartQuantity();
             this.fetchCart();
             this.fetchCartData();
         },
-        openCart() {
-            this.toggleViewCart();
-        },
-        getUserData() {
-            axios
-                .get("/api/user")
-                .then((response) => {
-                    if (response.data) {
-                        this.userData = response.data;
-                        this.isAdmin = this.userData.role === "admin";
-                    }
-                })
-                .catch((error) => {
-                    console.error(
-                        "An error occurred while fetching user data:",
-                        error
-                    );
-                    this.$router.push({ name: "Home" });
-                });
-        },
-        getCartQuantity() {
-            axios
-                .get("/api/cart-quantity")
-                .then((response) => {
-                    // console.log(response);
-                    this.cartQty = response.data.cartQuantity;
-                })
-                .catch((error) => {
-                    console.error("An error:", error);
-                });
-        },
     },
 };
 </script>
-<style scoped>
+<style>
 header {
     top: 0;
     left: 0;
     width: 100%;
     transition: top 1s;
     background: white;
-    background-color: rgba(255, 255, 255, 0.8);
-    transition: background-color 0.6s ease;
+    background-color: rgba(255, 255, 255, 0.9);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
     position: sticky;
     z-index: 10;
-}
-header.active {
-    top: 0;
-    background-color: rgba(0, 0, 0, 0);
-    background: white;
 }
 .dropdown-1 {
     position: relative;
@@ -405,20 +353,6 @@ header.active {
     justify-content: end;
 }
 
-.darken {
-    z-index: 8000 !important;
-    /* opacity: 0.1; */
-    filter: blur(4px);
-    /* position: relative; */
-}
-.search_box {
-    height: fit-content;
-    width: fit-content;
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0.7);
-    top: 100%;
-    right: 0;
-}
 .filter-button {
     display: none;
 }

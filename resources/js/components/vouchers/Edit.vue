@@ -6,33 +6,11 @@
                     type="text"
                     name="voucher_code"
                     v-model="voucher_code"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder="Voucher code"
+                    class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                 />
-                <label
-                    for="voucher_code"
-                    name="voucher_code"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                    >Voucher code</label
-                >
             </div>
             <div class="mt-2">
-                <label for="start_datetime" class="text-sm">Start day:</label>
-                <input
-                    type="datetime-local"
-                    class="text-sm"
-                    name="start_datetime"
-                    v-model="start_datetime"
-                />
-                <br />
-                <label for="end_datetime" class="text-sm">End day:</label>
-                <input
-                    type="datetime-local"
-                    id="end_datetime"
-                    class="text-sm"
-                    name="end_datetime"
-                    v-model="end_datetime"
-                />
-                <br />
                 <div class="flex my-3">
                     <input
                         type="number"
@@ -42,9 +20,8 @@
                         max="100"
                         v-model="discount_value"
                         oninput="validity.valid||(value='');"
-                        class="w-2/3 px-3 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600"
+                        class="text-sm border border-gray-300 appearance-none block w-full mr-1 bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                     />
-                    |
                     <input
                         type="number"
                         v-model="voucher_quantity"
@@ -52,7 +29,7 @@
                         placeholder="Vouchers Quantity"
                         min="0"
                         oninput="validity.valid||(value='');"
-                        class="w-2/3 px-3 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600"
+                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                     />
                 </div>
                 <div class="w-full">
@@ -75,6 +52,23 @@
                         </select>
                     </div>
                 </div>
+                <label for="start_datetime" class="text-sm">Start day:</label>
+                <input
+                    type="datetime-local"
+                    class="text-sm"
+                    name="start_datetime"
+                    v-model="start_datetime"
+                />
+                <br />
+                <label for="end_datetime" class="text-sm">End day:</label>
+                <input
+                    type="datetime-local"
+                    id="end_datetime"
+                    class="text-sm"
+                    name="end_datetime"
+                    v-model="end_datetime"
+                />
+                <br />
             </div>
             <div
                 v-if="errorMessages.length"
@@ -167,7 +161,7 @@ export default {
                     this.showNotification(response.data.message);
                     this.getVoucherData();
                 } else {
-                   this.errorMessages = response.data.error;
+                    this.errorMessages = response.data.error;
                 }
             } catch (error) {
                 console.error("Error updating voucher:", error);

@@ -10,17 +10,21 @@
                                 name="title"
                                 id="title"
                                 v-model="title"
-                                class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                placeholder="Title"
                             />
-                            <label
-                                for="title"
-                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                >Title</label
-                            >
+                            <input
+                                type="text"
+                                name="link_url"
+                                id="link_url"
+                                v-model="link_url"
+                                class="text-sm border border-gray-400 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                placeholder="Link url"
+                            />
                         </div>
                         <div class="mt-2">
                             <textarea
-                                class="w-full border rounded-lg border-gray-700 p-3 text-sm"
+                                class="w-full border rounded-lg border-gray-400 p-3 text-sm"
                                 placeholder="Description...."
                                 rows="4"
                                 lg:row="9"
@@ -100,7 +104,8 @@ export default {
             errorMessages: [],
             images: [],
             status: false,
-            title: null,
+            title: "",
+            link_url: "",
             description: "",
         };
     },
@@ -117,6 +122,7 @@ export default {
             const file = this.images[0];
             let formData = new FormData();
             formData.append("title", this.title);
+            formData.append("link_url", this.link_url);
             formData.append("description", this.description);
             formData.append("status", this.status ? 1 : 0);
             formData.append("image", file);
@@ -128,7 +134,7 @@ export default {
                     },
                 })
                 .then((response) => {
-                    console.log(response.data);
+                    // console.log(response.data);
                     if (response.data.success == true) {
                         this.showNotification(response.data.message);
                     } else {

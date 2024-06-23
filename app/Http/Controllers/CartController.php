@@ -14,6 +14,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\product_variants;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
+
 
 
 class CartController extends Controller
@@ -21,14 +24,15 @@ class CartController extends Controller
 
     public function cartView()
     {
-        // Session::flush(); 
-        $viewcartData = Session::get('cart');
-        $dataCart = Session::get('dataCart');
-        // dd($viewcartData);
-        if (count($viewcartData) > 0 && count($dataCart) > 0) {
+        // Redis::del('cart');
+        // Redis::del('dataCart');
+        $cart = json_decode(Redis::get('cart'), true);
+        $dataCart = json_decode(Redis::get('dataCart'), true);
+
+        if (count($cart) > 0 && count($dataCart) > 0) {
             return response()->json([
                 'success' => true,
-                'cart' => $viewcartData,
+                'cart' => $cart,
                 'dataCart' => $dataCart,
             ]);
         } else {
@@ -39,8 +43,8 @@ class CartController extends Controller
     }
     public function getCartView()
     {
-        $cart = Session::get('cart');
-        $dataCart = Session::get('dataCart');
+        $cart = json_decode(Redis::get('cart'), true);
+        $dataCart = json_decode(Redis::get('dataCart'), true);
         if (count($cart) > 0) {
             return response()->json([
                 'success' => true,
@@ -57,11 +61,17 @@ class CartController extends Controller
     //
     public function addcart(Request $request)
     {
+
         $quantityInput = $request->quantity;
         $productId = $request->input('product_id');
         $discountId = $request->input('discount_id');
         $product = Product::find($productId);
         $img = Images::where('product_id', $productId)->first();
+        if (Redis::exists('cart')) {
+            $cart = json_decode(Redis::get('cart'), true);
+        } else {
+            $cart = [];
+        }
         if ($img) {
             $imageUrl = $img->image;
         } else {
@@ -81,11 +91,6 @@ class CartController extends Controller
                 'success' => false,
                 'error' => ['Please select size and color.'],
             ]);
-        }
-        if (session()->has('cart')) {
-            $cart = session()->get('cart');
-        } else {
-            $cart = [];
         }
         $productVariant = ProductVariant::where('product_id', $product->id)
             ->whereHas('size', function ($query) use ($size) {
@@ -158,7 +163,7 @@ class CartController extends Controller
         $total = 0;
         $vatRate = 0;
 
-        foreach ($cart as $item) {
+        foreach ($cart as $index => $item) {
             if (is_array($item) && isset($item['id'])) {
                 $discount = $item['discountPercent'] ?? 0;
                 $product = Product::find($item['id']);
@@ -188,13 +193,13 @@ class CartController extends Controller
                     } else {
                         return response()->json([
                             'success' => false,
-                            'error' => ['error']
+                            'error' => ['error1']
                         ]);
                     }
                 } else {
                     return response()->json([
                         'success' => false,
-                        'error' => ['error']
+                        'error' => ['error2']
                     ]);
                 }
             }
@@ -217,27 +222,26 @@ class CartController extends Controller
             'size' => $size,
             'name' => $product->name,
         ];
-
-        session()->put('cart', $cart);
-        session()->put('dataCart', $dataCart);
+        Redis::set('cart', json_encode($cart));
+        Redis::set('dataCart', json_encode($dataCart));
         return response()->json([
             'success' => true,
             'message' => ['Add cart successfully'],
             'dataProduct' => $dataProduct,
         ]);
     }
-    /////////////////////////////////////////////
+    // 
 
     public function removeItem($id, $size, $color, $quantity)
     {
-        $cart = session()->get('cart', []);
-        $dataCart = Session::get('dataCart');
+        $cart = json_decode(Redis::get('cart'), true);
+        $dataCart = json_decode(Redis::get('dataCart'), true);
         foreach ($cart as $key => $item) {
             if ($item['id'] == $id) {
                 if ((!$size || (isset($item['size']) && $item['size'] == $size)) && (!$color || $item['color'] == $color)) {
                     if (!$quantity || ($quantity == $item['quantity'])) {
                         unset($cart[$key]);
-                        session()->put('cart', $cart);
+                        Redis::set('cart', json_encode($cart));
                         $subtotal = 0;
                         $totalWithoutVat = 0;
                         $total = 0;
@@ -295,8 +299,8 @@ class CartController extends Controller
                             'vat' => $vat,
                             'cartQuantity' => $cartQuantity,
                         ];
-                        Session::put('dataCart', $dataCart);
-                        Session::put('cart', $cart);
+                        Redis::set('cart', json_encode($cart));
+                        Redis::set('dataCart', json_encode($dataCart));
                         return response()->json([
                             'success' => true,
                             'message' => [' Removed successfully.'],
@@ -320,13 +324,14 @@ class CartController extends Controller
         $productId = $request->input('product_id');
         $size = $request->input('size');
         $color = $request->input('color');
-        $cart = session()->get('cart', []);
+        $cart = json_decode(Redis::get('cart'), true);
+        $dataCart = json_decode(Redis::get('dataCart'), true);
         foreach ($cart as $key => $item) {
             if ($item['id'] == $productId) {
                 if ((!$size || (isset($item['size']) && $item['size'] == $size)) && (!$color || $item['color'] == $color)) {
                     if (!$request->has('quantity') || ($request->input('quantity') == $item['quantity'])) {
                         unset($cart[$key]);
-                        session()->put('cart', $cart);
+                        Redis::set('cart', json_encode($cart));
                         $subtotal = 0;
                         $totalWithoutVat = 0;
                         $total = 0;
@@ -361,10 +366,16 @@ class CartController extends Controller
                                         $subtotal += ($productPrice - $discountAmount) * $item['quantity'];
                                         $totalWithoutVat += $productPrice * $item['quantity'];
                                     } else {
-                                        return redirect()->route('error.page');
+                                        return response()->json([
+                                            'success' => false,
+                                            'message' => ['error']
+                                        ]);
                                     }
                                 } else {
-                                    return redirect()->route('error.page');
+                                    return response()->json([
+                                        'success' => false,
+                                        'message' => ['error']
+                                    ]);
                                 }
                             }
                         }
@@ -378,8 +389,8 @@ class CartController extends Controller
                             'vat' => $vat,
                             'cartQuantity' => $cartQuantity,
                         ];
-                        Session::put('dataCart', $dataCart);
-                        Session::put('cart', $cart);
+                        Redis::set('cart', json_encode($cart));
+                        Redis::set('dataCart', json_encode($dataCart));
                         return response()->json(['success' => 'Product removed from view cart successfully.', 'cart' => $cart]);
                     } else {
                         return response()->json(['error' => 'removed from view cart fail.']);
@@ -398,7 +409,7 @@ class CartController extends Controller
         $color = $request->input('color');
         $size = $request->input('size');
 
-        $cart = session()->get('cart', []);
+        $cart = json_decode(Redis::get('cart'), true);
         if (empty($cart)) {
             return response()->json(['success' => false, 'message' => ['Cart is empty.']]);
         }
@@ -440,8 +451,7 @@ class CartController extends Controller
                     ]);
                 }
                 $cart[$key]['quantity'] = $newQuantity;
-                session()->put('cart', $cart);
-                Session::put('cart', $cart);
+                Redis::set('cart', json_encode($cart));
                 return response()->json([
                     'success' => true,
                     'message' => ['Quantity update successfully!']
@@ -454,30 +464,18 @@ class CartController extends Controller
     /////////////////////
     public function getCartQuantity()
     {
-        $cartQuantity = count(session('cart', []));
+        $cart = json_decode(Redis::get('cart'), true);
+        if ($cart) {
+            $cartQuantity = count($cart);
+        } else {
+            $cartQuantity = 0;
+        }
         return response()->json(['cartQuantity' => $cartQuantity]);
-    }
-    ///
-
-
-    public function updateTime(Request $request)
-    {
-        $cart = Session::get('cart');
-        $total = Session::get('total');
-        $subtotal = Session::get('subtotal');
-
-        $dataview = [
-            'cart' => $cart,
-            'subtotal' => $subtotal,
-            'total' => $total,
-        ];
-
-        return response()->json($dataview);
     }
     ///
     public function SubtotalTotal(Request $request)
     {
-        $cart = Session::get('cart');
+        $cart = json_decode(Redis::get('cart'), true);
         $subtotal = 0;
         $totalWithoutVat = 0;
         $total = 0;

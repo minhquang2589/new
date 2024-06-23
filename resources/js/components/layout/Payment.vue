@@ -1,4 +1,5 @@
 <template>
+    <LoadingSpinner :isLoading="isLoading" />
     <div>
         <div class="text-center mt-10">
             <h1 class="text-xl font-bold text-gray-900 sm:text-3xl">Payment</h1>
@@ -131,7 +132,13 @@
                     <div
                         class="flex my-1 justify-end border-t border-gray-300"
                     ></div>
-                    <div v-if="totalDiscountAmount && totalDiscountAmount >0 ">
+                    <div v-if="voucherCode && voucherCode > 0">
+                        <span class="text-[12px] flex justify-between">
+                            <dt class="inline">Voucher:</dt>
+                            <dd class="inline">- {{ voucherCode }}%</dd>
+                        </span>
+                    </div>
+                    <div v-if="totalDiscountAmount && totalDiscountAmount > 0">
                         <span class="text-[12px] flex justify-between">
                             <dt class="inline">Total discount:</dt>
                             <dd class="inline">
@@ -182,8 +189,10 @@
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from "vuex";
+import LoadingSpinner from "../layout/LoadingSpinner.vue";
 export default {
     name: "Payment",
+    components: { LoadingSpinner },
     data() {
         return {
             cartCheckout: [],
@@ -202,6 +211,7 @@ export default {
             address: "",
             note: "",
             paymentMethod: "",
+            isLoading: false,
         };
     },
     mounted() {
@@ -223,6 +233,7 @@ export default {
                     this.totalPrice = response.data.data.checkoutSubtotal;
                     this.date = response.data.time;
                     this.paymentMethod = response.data.element.payment;
+                    this.voucherCode = response.data.data.VoucherValue;
                 }
                 if (
                     response.data.success == false &&
@@ -256,22 +267,25 @@ export default {
             }).format(value);
         },
         handleCheckout() {
+            this.isLoading = true;
             axios
                 .post("/api/handle/checkout")
                 .then((response) => {
                     // console.log(response.data);
-                    console.log(response.data);
                     if (response.data.success == true) {
                         this.fetchCart();
                         this.fetchCartData();
                         this.fetchCartQuantity();
+                        this.isLoading = false;
                         this.$router.push({ name: "Confirm" });
                     }
                     if (response.data.success == false) {
+                        this.isLoading = false;
                         this.showNotification(response.data.error);
                     }
                 })
                 .catch((error) => {
+                    this.isLoading = false;
                     console.error(error);
                 });
         },

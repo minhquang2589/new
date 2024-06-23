@@ -17,6 +17,8 @@ use App\Models\ProductDetails;
 use App\Models\ProductCates;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Redis;
+
 
 
 class VouchersController extends Controller
@@ -134,8 +136,8 @@ class VouchersController extends Controller
         if ($voucher) {
             $VoucherValue = $voucher->discount_value;
             if ($VoucherValue > 0) {
-                $cart = Session::get('cart');
-                $dataCart = Session::get('dataCart');
+                $cart = json_decode(Redis::get('cart'), true);
+                $dataCart = json_decode(Redis::get('dataCart'), true);
                 $subtotal = 0;
                 $totalWithoutVat = 0;
                 $vatRate = 0;
@@ -201,7 +203,8 @@ class VouchersController extends Controller
                     'cartQuantity' => $cartQuantity,
                     'totalDiscountAmount' => $totalDiscountAmount,
                 ];
-                Session::put('cart', $cart);
+                Redis::set('cart', json_encode($cart));
+                Redis::set('dataInVoucher', json_encode($dataInVoucher));
                 return response()->json([
                     'success' => true,
                     'dataInVoucher' => $dataInVoucher,
@@ -217,8 +220,8 @@ class VouchersController extends Controller
     }
     public function handleRemoveVoucher(Request $request)
     {
-        $cart = Session::get('cart');
-        $dataCart = Session::get('dataCart');
+        $cart = json_decode(Redis::get('cart'), true);
+        $dataCart = json_decode(Redis::get('dataCart'), true);
         $subtotal = 0;
         $totalWithoutVat = 0;
         $vatRate = 0;
@@ -268,14 +271,20 @@ class VouchersController extends Controller
         $newSubtotal = $subtotal;
         $vat = $subtotal * $vatRate;
         $cartQuantity = count($cart);
+
         $dataInVoucher = [
             'subtotal' => $newSubtotal,
             'VAT' => $vatRate,
             'total' => $totalWithoutVat,
+            'voucherCode' => null,
+            'VoucherValue' => null,
             'cartQuantity' => $cartQuantity,
             'totalDiscountAmount' => $totalDiscountAmount,
         ];
-        Session::put('cart', $cart);
+      
+        Redis::set('cart', json_encode($cart));
+        Redis::set('dataInVoucher', json_encode($dataInVoucher));
+
         return response()->json([
             'success' => true,
             'message' => 'Voucher removed successfully',

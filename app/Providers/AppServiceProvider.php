@@ -41,21 +41,10 @@ class AppServiceProvider extends ServiceProvider
                     'phone' => $user->phone,
                     'address' => $user->address,
                 ];
-                if ($user->role == 'admin') {
-                    $userData['isAdmin'] = true;
-                } else {
-                    $userData['isAdmin'] = false;
-                }
-                session()->put('userData', $userData);
             }
-            $userData = Session::get('userData');
             ///
-            $section_02 = Section_02::where('status', 1)->first();
             ///
-            $slider_1 = Slider::all();
-            $view->with('slider', $slider_1);
-            $view->with('section_02_view', $section_02);
-            $view->with('userData', $userData);
+          
         });
     }
 }

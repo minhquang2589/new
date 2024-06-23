@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string('image', 255);
             $table->string('status')->default('1');
-            $table->text('description')->nullable();
+            $table->string('link_url', 255);
             $table->timestamps();
         });
     }

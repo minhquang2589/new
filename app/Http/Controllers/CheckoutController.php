@@ -30,24 +30,15 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 
-
-
 class CheckoutController extends Controller
 {
-    // protected $emailController;
-
-    // public function __construct(EmailController $emailController)
-    // {
-    //     $this->emailController = $emailController;
-    // }
-
     //
     public function checkoutView(Request $request)
     {
-        $cart = Session::get('cart');
-        $orderNumber = Session::get('orderNumber');
-        $dataCart = Session::get('dataCart');
-        $aruvoucher = Session::get('aruvoucher');
+        $cart = json_decode(Redis::get('cart'), true);
+        $dataCart = json_decode(Redis::get('dataCart'), true);
+        $dataInVoucher = json_decode(Redis::get('dataInVoucher'), true);
+
         if (!$cart) {
             return response()->json([
                 'success' => false,
@@ -67,68 +58,63 @@ class CheckoutController extends Controller
         $totalDiscountAmount = 0;
         $totalOriginalPrice = 0;
 
-        if ($cart) {
-            foreach ($cart as $item) {
-                if (is_array($item) && isset($item['id'])) {
-                    $discount = $item['discountPercent'] ?? 0;
-                    $product = Product::find($item['id']);
-                    if ($product) {
-                        $productPrice = $product->price;
-                        $productVariant = ProductVariant::where('product_id', $product->id)
-                            ->whereHas('size', function ($query) use ($item) {
-                                $query->where('size', $item['size']);
-                            })
-                            ->whereHas('color', function ($query) use ($item) {
-                                $query->where('color', $item['color']);
-                            })
-                            ->first();
-                        if ($productVariant) {
-                            if ($productVariant->discount_id) {
-                                $discountData = Discounts::where('id', $productVariant->discount_id)
-                                    ->where('start_datetime', '<=', Carbon::now())
-                                    ->where('end_datetime', '>=', Carbon::now())
-                                    ->first();
-                                if ($discountData) {
-                                    $discount = $discountData->discount;
-                                }
+        foreach ($cart as $item) {
+            if (is_array($item) && isset($item['id'])) {
+                $discount = $item['discountPercent'] ?? 0;
+                $product = Product::find($item['id']);
+                if ($product) {
+                    $productPrice = $product->price;
+                    $productVariant = ProductVariant::where('product_id', $product->id)
+                        ->whereHas('size', function ($query) use ($item) {
+                            $query->where('size', $item['size']);
+                        })
+                        ->whereHas('color', function ($query) use ($item) {
+                            $query->where('color', $item['color']);
+                        })
+                        ->first();
+                    if ($productVariant) {
+                        if ($productVariant->discount_id) {
+                            $discountData = Discounts::where('id', $productVariant->discount_id)
+                                ->where('start_datetime', '<=', Carbon::now())
+                                ->where('end_datetime', '>=', Carbon::now())
+                                ->first();
+                            if ($discountData) {
+                                $discount = $discountData->discount;
                             }
-                            $discountAmount = ($productPrice * $discount) / 100;
-                            $subtotal += ($productPrice - $discountAmount) * $item['quantity'];
-                            $totalWithoutVat += $productPrice * $item['quantity'];
-                            $totalDiscountAmount += $discountAmount * $item['quantity'];
-                            $totalOriginalPrice += $productPrice * $item['quantity'];
-                        } else {
-                            return response()->json([
-                                'success' => false,
-                                'message' => ['error!'],
-                            ]);
                         }
+                        $discountAmount = ($productPrice * $discount) / 100;
+                        $subtotal += ($productPrice - $discountAmount) * $item['quantity'];
+                        $totalWithoutVat += $productPrice * $item['quantity'];
+                        $totalDiscountAmount += $discountAmount * $item['quantity'];
+                        $totalOriginalPrice += $productPrice * $item['quantity'];
                     } else {
                         return response()->json([
                             'success' => false,
                             'message' => ['error!'],
                         ]);
                     }
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => ['error!'],
+                    ]);
                 }
             }
         }
-        $voucherCode = $request->input('voucher');
-        if ($voucherCode) {
-            $voucher = Vouchers::where('voucher_code', $voucherCode)
-                ->where('voucher_quantity', '>', 0)
-                ->where('status', '=', 'Active', '||', 'Used')
-                ->where('discount_value', '>', 0)
-                ->first();
-            if ($voucher) {
+
+
+        if ($dataInVoucher && $dataInVoucher['voucherCode']) {
+            $voucherCode = $dataInVoucher['voucherCode'];
+            if ($voucherCode) {
+                $voucher = Vouchers::where('voucher_code', $voucherCode)
+                    ->where('voucher_quantity', '>', 0)
+                    ->where('status', '=', 'Active')
+                    ->where('discount_value', '>', 0)
+                    ->first();
                 $VoucherValue = $voucher->discount_value;
                 $voucherDiscountPercentage = ($VoucherValue / 100) * $subtotal;
                 $subtotal -= $voucherDiscountPercentage;
                 $totalDiscountAmount += $voucherDiscountPercentage;
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => ['Voucher is invalid or expired!'],
-                ]);
             }
         }
 
@@ -144,7 +130,7 @@ class CheckoutController extends Controller
             'cartCheckout' => $cart,
             'cartQuantity' => $cartQuantity,
         ];
-        Session::put('DETACheckout', $DETACheckout);
+        Redis::set('DETACheckout', json_encode($DETACheckout));
         return response()->json([
             'success' => true,
             'DETACheckout' => $DETACheckout,
@@ -154,8 +140,8 @@ class CheckoutController extends Controller
     /////
     public function process(Request $request)
     {
-        $DETACheckout = Session::get('DETACheckout');
-        $cart = Session::get('cart');
+        $DETACheckout = json_decode(Redis::get('DETACheckout'), true);
+        $cart = json_decode(Redis::get('cart'), true);
         if (!$DETACheckout || !$cart) {
             return response()->json([
                 'success' => false,
@@ -177,17 +163,11 @@ class CheckoutController extends Controller
         }
         $payment = $request->input('payment');
         switch ($payment) {
-            case 'qr':
-                $payment = 'Thanh toán bằng mã QR code';
+            case 'vnpay':
+                $payment = 'Thanh toán trực tuyến';
                 break;
             case 'meet':
                 $payment = 'Thanh toán khi nhận hàng';
-                break;
-            case 'paypal':
-                $payment = 'Thanh toán bằng Paypal';
-                break;
-            case 'bank':
-                $payment = 'Chuyển khoản';
                 break;
             default:
                 break;
@@ -217,7 +197,7 @@ class CheckoutController extends Controller
             'subtotal' => $DETACheckout['checkoutSubtotal'],
             'total' => $DETACheckout['checkoutTotal'],
         ];
-        Session::put('element', $element);
+        Redis::set('element', json_encode($element));
         return response()->json([
             'success' => true,
             'data' => $dataCheckout,
@@ -228,7 +208,7 @@ class CheckoutController extends Controller
     {
         function generateOrderNumber()
         {
-            if (!Session::has('orderNumber')) {
+            if (!Redis::get('orderNumber')) {
                 $unique = false;
                 $randomDigits = '';
                 while (!$unique) {
@@ -238,10 +218,10 @@ class CheckoutController extends Controller
                         $unique = true;
                     }
                 }
-                Session::put('orderNumber', $randomDigits);
+                Redis::set('orderNumber', json_encode($randomDigits));
                 return $randomDigits;
             } else {
-                return Session::get('orderNumber');
+                return  json_decode(Redis::get('orderNumber'), true);
             }
         }
         function getTime()
@@ -252,11 +232,9 @@ class CheckoutController extends Controller
 
         $time = getTime();
         $orderNumber = generateOrderNumber();
-        $cart = Session::get('cart');
-        // $data = Session::get('data');
-        $element = Session::get('element');
-        $DETACheckout = Session::get('DETACheckout');
-        $dataCheckout = Session::get('dataCheckout');
+        $cart = json_decode(Redis::get('cart'), true);
+        $element = json_decode(Redis::get('element'), true);
+        $DETACheckout = json_decode(Redis::get('DETACheckout'), true);
         if (
             !$orderNumber
             ||  !$cart
@@ -268,13 +246,13 @@ class CheckoutController extends Controller
                 'payment' => false,
             ]);
         }
-        Session::put('time', $time);
+        Redis::set('time', json_encode($time));
+
         return response()->json([
             'success' => true,
             'data' => $DETACheckout,
             'orderNumber' => $orderNumber,
             'element' => $element,
-            'dataCheckout' => $dataCheckout,
             'time' => $time,
         ]);
     }
@@ -284,12 +262,155 @@ class CheckoutController extends Controller
     {
         try {
             DB::beginTransaction();
+            $time = json_decode(Redis::get('time'), true);
+            $cart = json_decode(Redis::get('cart'), true);
+            $orderNumber = json_decode(Redis::get('orderNumber'), true);
+            $element = json_decode(Redis::get('element'), true);
+            $DETACheckout = json_decode(Redis::get('DETACheckout'), true);
 
-            $time = Session::get('time');
-            $cart = Session::get('cart');
-            $orderNumber = Session::get('orderNumber');
-            $element = Session::get('element');
-            $DETACheckout = Session::get('DETACheckout');
+            if ($cart) {
+                $voucherCode = $DETACheckout['voucherCode'];
+                if ($voucherCode) {
+                    $voucher = Vouchers::where('voucher_code', $voucherCode)->first();
+                    if ($voucher) {
+                        if (
+                            $voucher->discount_value <= 0
+                            || $voucher->voucher_quantity <= 0
+                            || $voucher->status != 'Active'
+                        ) {
+                            return response()->json([
+                                'success' => false,
+                                'error' => ['error 1'],
+                            ]);
+                        }
+                    } else {
+                        return response()->json([
+                            'success' => false,
+                            'error' => ['Voucher not found'],
+                        ]);
+                    }
+                }
+
+                foreach ($cart as $item) {
+                    $productId = $item['id'];
+                    $discountId = $item['discountId'];
+                    $sizeName = $item['size'];
+                    $colorName = $item['color'];
+                    $quantity = $item['quantity'];
+                    $productVariant = ProductVariant::whereHas('size', function ($query) use ($sizeName) {
+                        $query->where('size', $sizeName);
+                    })->whereHas('color', function ($query) use ($colorName) {
+                        $query->where('color', $colorName);
+                    })->where('product_id', $productId)->first();
+
+                    if (!$productVariant || $productVariant->quantity < $quantity) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => ['Out of stock'],
+                        ]);
+                    }
+
+                    if ($discountId) {
+                        $discount = Discounts::find($discountId);
+                        if (
+                            $discount->remaining < $quantity
+                            || $discount->status == 'Used'
+                            || $discount->status == 'Expired'
+                            || $discount->discount <= 0
+                        ) {
+                            return response()->json([
+                                'success' => false,
+                                'error' => ['Invalid discount'],
+                            ]);
+                        }
+                    }
+                }
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => ['Cart is empty'],
+                ]);
+            }
+
+
+            $email = $element['email'];
+            $customer = Customers::where('email', $email)->first();
+            if ($customer) {
+                $customer->increment('total_purchases');
+            } else {
+                $data = [
+                    'name' => $element['name'],
+                    'email' => $element['email'],
+                    'address' => $element['address'],
+                    'phone' => $element['phone'],
+                    'total_purchases' => 1,
+                ];
+                $customer = Customers::create($data);
+            }
+
+            $payment = Payment::firstOrCreate(['name' => $element['payment']]);
+            $ordernumber = ordernumber::create(['order_number' => $orderNumber]);
+         
+
+            $status = $this->getOrderStatus($element['payment']);
+
+            $order = new Orders();
+            $order->customer_id = $customer->id;
+            $order->total_amount = $element['subtotal'];
+            $order->total_discount = $DETACheckout['totalDiscountAmount'] ?? 0;
+            $order->payment_method_id = $payment->id;
+            $order->status = $status;
+            $order->notes = $element['notes'] ?? null;
+            $order->voucher_id = Vouchers::where('voucher_code', $DETACheckout['voucherCode'])->value('id');
+            $order->order_number_id = $ordernumber->id;
+            $order->order_date = $time;
+            $order->save();
+
+            foreach ($cart as &$item) {
+                $item['finalPrice'] = isset($item['price']) && isset($item['discountPercent']) ?
+                    $item['price'] - ($item['price'] * $item['discountPercent']) / 100 : $item['price'];
+
+                $orderItem = new OrderItems();
+                $orderItem->order_id = $order->id;
+                $orderItem->product_id = $item['id'];
+                $orderItem->color_id = Color::where('color', $item['color'])->value('id');
+                $orderItem->size_id = Size::where('size', $item['size'])->value('id');
+                $orderItem->order_number_id = $ordernumber->id;
+                $orderItem->quantity = $item['quantity'];
+                $orderItem->price = $item['finalPrice'];
+                $orderItem->save();
+            }
+
+            DB::commit();
+            $orderDate = $time;
+            // send mail in job 
+            // SendOrderEmail::dispatch($time, $element, $orderNumber, $cart, $DETACheckout);
+            $emailController = new EmailController();
+            $emailController->sendMail($orderDate, $element, $orderNumber, $cart, $DETACheckout);
+            $this->checkoutSuccess($cart, $DETACheckout);
+            $this->clearCacheData();
+            return response()->json([
+                'success' => true,
+                'message' => ['Checkout successfully.'],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'error' => ['Checkout failed: ' . $e->getMessage()],
+            ]);
+        }
+    }
+    ///
+    public function vnpay()
+    {
+        try {
+            DB::beginTransaction();
+            $time = json_decode(Redis::get('time'), true);
+            $cart = json_decode(Redis::get('cart'), true);
+            $orderNumber = json_decode(Redis::get('orderNumber'), true);
+            $element = json_decode(Redis::get('element'), true);
+            $DETACheckout = json_decode(Redis::get('DETACheckout'), true);
 
             if ($cart) {
                 $voucherCode = $DETACheckout['voucherCode'];
@@ -405,16 +526,85 @@ class CheckoutController extends Controller
 
             DB::commit();
             $orderDate = $time;
-            $emailController = new EmailController();
-            $emailController->sendMail($orderDate, $element, $orderNumber, $cart, $DETACheckout);
             // send mail in job 
             // SendOrderEmail::dispatch($time, $element, $orderNumber, $cart, $DETACheckout);
-            $this->checkoutSuccess($cart, $DETACheckout);
-            $this->clearSessionData();
+
+            // $emailController = new EmailController();
+            // $emailController->sendMail($orderDate, $element, $orderNumber, $cart, $DETACheckout);
+            // $this->checkoutSuccess($cart, $DETACheckout);
+            // $this->clearCacheData();
+
+            $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+            $vnp_Returnurl = "http://127.0.0.1:8000/confirm";
+            $vnp_TmnCode = "JH35Y0P2";
+            $vnp_HashSecret = "0XTLMKBT126P90UD9Z6KZFDZORQG57D3";
+
+            $vnp_TxnRef = $order->id;
+            $vnp_OrderInfo = $order->id;;
+            $vnp_OrderType = $order->id;;
+            $vnp_Amount = $item['finalPrice'] * 100;
+            $vnp_Locale = 'vn';
+            $vnp_BankCode = 'NCB';
+            $vnp_IpAddr = '127.0.0.1';
+            //Add Params of 2.0.1 Version
+            $vnp_ExpireDate = $time;
+
+            $inputData = array(
+                "vnp_Version" => "2.1.0",
+                "vnp_TmnCode" => $vnp_TmnCode,
+                "vnp_Amount" => $vnp_Amount,
+                "vnp_Command" => "pay",
+                "vnp_CreateDate" => date('YmdHis'),
+                "vnp_CurrCode" => "VND",
+                "vnp_IpAddr" => $vnp_IpAddr,
+                "vnp_Locale" => $vnp_Locale,
+                "vnp_OrderInfo" => $vnp_OrderInfo,
+                "vnp_OrderType" => $vnp_OrderType,
+                "vnp_ReturnUrl" => $vnp_Returnurl,
+                "vnp_TxnRef" => $vnp_TxnRef,
+                "vnp_ExpireDate" => $vnp_ExpireDate,
+            );
+
+            if (isset($vnp_BankCode) && $vnp_BankCode != "") {
+                $inputData['vnp_BankCode'] = $vnp_BankCode;
+            }
+            if (isset($vnp_Bill_State) && $vnp_Bill_State != "") {
+                $inputData['vnp_Bill_State'] = $vnp_Bill_State;
+            }
+
+            //var_dump($inputData);
+            ksort($inputData);
+            $query = "";
+            $i = 0;
+            $hashdata = "";
+            foreach ($inputData as $key => $value) {
+                if ($i == 1) {
+                    $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
+                } else {
+                    $hashdata .= urlencode($key) . "=" . urlencode($value);
+                    $i = 1;
+                }
+                $query .= urlencode($key) . "=" . urlencode($value) . '&';
+            }
+
+            $vnp_Url = $vnp_Url . "?" . $query;
+            if (isset($vnp_HashSecret)) {
+                $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret); //  
+                $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
+            }
+            $returnData = array(
+                'code' => '00', 'message' => 'success', 'data' => $vnp_Url
+            );
             return response()->json([
-                'success' => true,
-                'message' => ['Checkout successfully.'],
+                'vnp_Url' =>  $inputData
             ]);
+
+
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => ['Checkout successfully.'],
+            //     'returnData' =>  json_encode($returnData),
+            // ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -423,6 +613,8 @@ class CheckoutController extends Controller
             ]);
         }
     }
+    /////////
+
 
     protected function checkoutSuccess($cart, $DETACheckout)
     {
@@ -491,9 +683,9 @@ class CheckoutController extends Controller
         }
     }
 
-    protected function clearSessionData()
+    protected function clearCacheData()
     {
-        Session::forget([
+        Redis::del([
             'cart', 'time', 'data', 'subtotal', 'voucherCode', 'aruvoucher',
             'DETACheckout', 'element', 'dataCart', 'total', 'voucherDiscountPercent',
             'cartQuantity', 'orderNumber'

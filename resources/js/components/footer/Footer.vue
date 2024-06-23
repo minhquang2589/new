@@ -1,160 +1,110 @@
 <template>
-    <div>
-        <span class="flex items-center mt-10">
-            <span class="h-px flex-1 bg-gray-300"></span>
-        </span>
-        <footer>
-            <div class="bg-white dark:bg-gray-900">
-                <div class="mx-auto max-w-screen-xl pb-4 lg:pb-10">
-                    <div class="mx-3 my-3 lg:mt-8 lg:my-0 sm:text-center">
-                        <h2
-                            class="mb-4 text-xl font-extrabold tracking-tight text-gray-900 sm:text-3xl dark:text-white"
+    <footer class="bg-white w-full">
+        <div class="px-10 py-5 mt-10 lg:py-8">
+        
+          
+            <div class="sm:flex sm:items-center sm:justify-between">
+                <ul
+                    class="flex flex-wrap justify-center gap-4 text-xs lg:justify-end"
+                >
+                    <li>
+                        <a
+                            href="#"
+                            class="text-gray-500 transition hover:opacity-75"
                         >
-                            Sign up for our newsletter
-                        </h2>
-                        <p
-                            class="mx-auto mb-8 max-w-2xl text-sm text-gray-500 sm:text-sm dark:text-gray-400"
-                        >
-                            Stay up to date with the roadmap progress,
-                            announcements and exclusive discounts feel free to
-                            sign up with your email.
-                        </p>
-                        <div
-                            v-if="successMessage"
-                            class="success-message my-1 text-xs text-green-600"
-                        >
-                            {{ successMessage }}
-                        </div>
-                        <div
-                            v-if="errorMessages.length"
-                            class="error-messages my-1 text-xs text-red-600"
-                        >
-                            <ul>
-                                <li
-                                    v-for="(error, index) in errorMessages"
-                                    :key="index"
-                                    class="mt-2"
-                                >
-                                    {{ error }}
-                                </li>
-                            </ul>
-                        </div>
+                            Terms & Conditions
+                        </a>
+                    </li>
 
-                        <form @submit.prevent="subscribe">
-                            <div
-                                class="items-center mx-auto mb-2 space-y-4 max-w-screen-sm sm:flex sm:space-y-0"
+                    <li>
+                        <a
+                            href="#"
+                            class="text-gray-500 transition hover:opacity-75"
+                        >
+                            Privacy Policy
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="#"
+                            class="text-gray-500 transition hover:opacity-75"
+                        >
+                            Minh Quang
+                        </a>
+                    </li>
+                </ul>
+
+                <ul
+                    class="mt-8 flex justify-center gap-6 sm:mt-0 lg:justify-end"
+                >
+                    <li>
+                        <a
+                            href="https://www.facebook.com/ngoomqct"
+                            target="_blank"
+                            type="button"
+                            class="text-gray-700 transition hover:opacity-75"
+                        >
+                            <svg
+                                class="h-6 w-6"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
                             >
-                                <div class="relative w-full">
-                                    <label
-                                        for="subemail"
-                                        class="hidden mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                                        >Email address</label
-                                    >
-                                    <div
-                                        class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none"
-                                    >
-                                        <svg
-                                            class="w-4 h-4 text-gray-500 dark:text-gray-400"
-                                            aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 16"
-                                        >
-                                            <path
-                                                d="m10.036 8.278 9.258-7.79A1.979 1.979 0 0 0 18 0H2A1.987 1.987 0 0 0 .641.541l9.395 7.737Z"
-                                            />
-                                            <path
-                                                d="M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <input
-                                        class="block p-3 pl-9 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 sm:rounded-none sm:rounded-l-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                        placeholder="Enter your email"
-                                        type="email"
-                                        v-model="subemail"
-                                        id="subemail"
-                                        name="subemail"
-                                    />
-                                </div>
-                                <div>
-                                    <button
-                                        type="submit"
-                                        class="py-3 px-5 w-full text-sm font-medium text-center text-white rounded-lg border cursor-pointer border-gray-500 bg-gray-500 hover:bg-gray-700 sm:rounded-none sm:rounded-r-lg focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                    >
-                                        Subscribe
-                                    </button>
-                                </div>
-                            </div>
-                            <div
-                                class="mx-auto max-w-screen-sm text-sm text-left text-gray-500 newsletter-form-footer dark:text-gray-300"
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="https://www.instagram.com/258923_/"
+                            target="_blank"
+                            type="button"
+                            class="text-gray-700 transition hover:opacity-75"
+                        >
+                            <svg
+                                class="h-6 w-6"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
                             >
-                                We care about the protection of your data.
-                                <a
-                                    href=""
-                                    class="font-medium text-gray-600 dark:text-primary-500 hover:underline"
-                                    >Read our Privacy Policy</a
-                                >.
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="#"
+                            rel="noreferrer"
+                            target="_blank"
+                            class="text-gray-700 transition hover:opacity-75"
+                        >
+                            <svg
+                                class="h-6 w-6"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"
+                                />
+                            </svg>
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div
-                class="flex flex-col items-center text-center text-surface mb-2 text-gray-500"
-            >
-                <div>
-                    <div class="w-full flex pb-3 text-center">
-                        © 2024 Design by Minh Quang
-                        <div class="pl-4 flex">
-                            <div class="flex">
-                                <div class="flex">
-                                    <a
-                                        href="https://www.facebook.com/ngoomqct"
-                                        target="_blank"
-                                        type="button"
-                                        class="rounded-full hover:text-blue-600 mr-3 m bg-transparent p-0 font-medium uppercase leading-normal text-surface transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus:ring-0 dark:text-white dark:hover:bg-secondary-900"
-                                        data-twe-ripple-init
-                                    >
-                                        <span class="[&>svg]:h-5 [&>svg]:w-5">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor"
-                                                viewBox="0 0 320 512"
-                                            >
-                                                <path
-                                                    d="M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z"
-                                                />
-                                            </svg>
-                                        </span>
-                                    </a>
-                                    <a
-                                        href="https://www.instagram.com/258923_/"
-                                        target="_blank"
-                                        type="button"
-                                        class="rounded-full hover:text-blue-600 bg-transparent p-0 font-medium uppercase leading-normal text-surface transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus:ring-0 dark:text-white dark:hover:bg-secondary-900"
-                                        data-twe-ripple-init
-                                    >
-                                        <span class="[&>svg]:h-5 [&>svg]:w-5">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="currentColor"
-                                                viewBox="0 0 448 512"
-                                            >
-                                                <path
-                                                    d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"
-                                                />
-                                            </svg>
-                                        </span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </div>
+        </div>
+    </footer>
 </template>
 <script>
 export default {

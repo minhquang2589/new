@@ -66,15 +66,22 @@
                                 <tr>
                                     <td class="lg:w-2/12 w-4/12">
                                         <img
+                                            @click="viewProduct(product.id)"
                                             :src="`/images/${product.image}`"
                                             :alt="product.name"
                                             class="object-cover w-full transition duration-500 group-hover:scale-105"
                                         />
                                     </td>
                                     <td
+                                        @click="viewProduct(product.id)"
                                         class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                                     >
-                                        {{ product.name }} - {{ product.id }}
+                                        <div
+                                            class="hover:text-blue-600 hover:underline hover:cursor-pointer"
+                                        >
+                                            {{ product.name }} -
+                                            {{ product.id }}
+                                        </div>
                                     </td>
                                     <td
                                         class="whitespace-nowrap px-4 py-2 text-gray-700"
@@ -252,6 +259,12 @@ export default {
     },
     methods: {
         ...mapActions(["showNotification"]),
+        viewProduct(id) {
+            this.$router.push({
+                name: "ViewProduct",
+                params: { id: id },
+            });
+        },
         nextPage() {
             if (this.page * this.perPage < this.displayedProducts.length) {
                 this.page++;
@@ -269,7 +282,7 @@ export default {
                 title: "Are you sure you want to delete?",
                 icon: "warning",
                 showCancelButton: true,
-                confirmButtonText: "Yes!",
+                confirmButtonText: "Yes",
                 cancelButtonText: "No",
                 customClass: {
                     popup: "confirmDeleteContainer",
@@ -342,3 +355,18 @@ export default {
     },
 };
 </script>
+<style>
+.confirm_cancel_button {
+    font-size: 14px !important;
+    padding: 5px 10px !important;
+    color: white !important;
+    background-color: gray !important;
+}
+
+.confirm_delete_button {
+    font-size: 14px !important;
+    padding: 5px 10px !important;
+    color: white !important;
+    background-color: black !important;
+}
+</style>

@@ -110,182 +110,164 @@
                         <div
                             class="flex mt-4 justify-end border-t border-gray-300"
                         ></div>
-                        <div v-if="cartCheckout != null" class="ml-4 mt-1">
-                            <div
-                                v-for="item in cartCheckout"
-                                :key="item.id"
-                                class="flex mt-2 justify-between"
-                            >
-                                <div>
+                        <div v-if="cartCheckout != null" class="mt-1">
+                            <template v-for="(item, index) in cartCheckout">
+                                <div class="flex ml-4 mt-2 justify-between">
                                     <div>
-                                        <span class="text-[12px]">
-                                            {{ item.name }} - {{ item.size }} x
-                                            {{ item.quantity }}</span
-                                        >
-                                        <div class="text-[12px]">
-                                            Color: {{ item.color }}
-                                        </div>
-                                        <div
-                                            v-if="item.discountPercent > 0"
-                                            class="text-[12px]"
-                                        >
-                                            <span>
-                                                <dt class="inline">
-                                                    Discount:
-                                                </dt>
-                                                <dd class="inline text-red-600">
-                                                    -
-                                                    {{ item.discountPercent }}%
-                                                </dd>
-                                            </span>
+                                        <div>
+                                            <span class="text-[12px]">
+                                                {{ item.name }} -
+                                                {{ item.size }} x
+                                                {{ item.quantity }}</span
+                                            >
+                                            <div class="text-[12px]">
+                                                Color: {{ item.color }}
+                                            </div>
+                                            <div
+                                                v-if="item.discountPercent > 0"
+                                                class="text-[12px]"
+                                            >
+                                                <span>
+                                                    <dt class="inline">
+                                                        Discount:
+                                                    </dt>
+                                                    <dd
+                                                        class="inline text-red-600"
+                                                    >
+                                                        -
+                                                        {{
+                                                            item.discountPercent
+                                                        }}%
+                                                    </dd>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div>
+                                        <span class="mr-3 text-[12px]">
+                                            {{
+                                                formatCurrency(item.price)
+                                            }}</span
+                                        >
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="mr-3 text-[12px]">
-                                        {{ formatCurrency(item.price) }}</span
+                                <span class="flex py-1 items-center">
+                                    <span
+                                        class="h-px flex-1 bg-gray-300"
+                                    ></span>
+                                </span>
+                            </template>
+                            <div class="ml-4">
+                                <div class="my-1 mr-2 flex justify-start">
+                                    <span class="text-[12px] text-gray-700">
+                                        {{ cartQuantity }} items</span
                                     >
                                 </div>
-                            </div>
-                            <div
-                                class="flex justify-end my-2 mr-4 border-t border-gray-300"
-                            ></div>
-                            <div class="my-1 mr-2 flex justify-start">
-                                <span class="text-[12px] text-gray-700">
-                                    {{ cartQuantity }} items</span
-                                >
-                            </div>
-                            <div v-if="voucherCode && voucherCode > 0">
-                                <span class="text-[12px]">
-                                    <dt class="inline">Voucher:</dt>
-                                    <dd class="inline text-red-700">
-                                        {{ voucherCode }} %
-                                    </dd>
-                                </span>
-                            </div>
-                            <div v-else></div>
-                            <div
-                                v-if="
-                                    totalDiscountAmount &&
-                                    totalDiscountAmount > 0
-                                "
-                            >
-                                <span class="text-[12px]">
-                                    <dt class="inline mr-1">Total discount:</dt>
-                                    <dd class="inline text-gray-700">
-                                        {{
-                                            formatCurrency(totalDiscountAmount)
-                                        }}
-                                    </dd>
-                                </span>
-                            </div>
-                            <div class="flex justify-between">
-                                <div class="text-[14px] text-gray-800">
-                                    Total price
+                                <div v-if="VoucherValue && VoucherValue > 0">
+                                    <span class="text-[12px]">
+                                        <dt class="inline mr-1">Voucher:</dt>
+                                        <dd class="inline text-red-700">
+                                            - {{ VoucherValue }} %
+                                        </dd>
+                                    </span>
                                 </div>
-                                <div class="text-[14px] text-gray-800 mr-5">
-                                    {{ formatCurrency(checkoutSubtotal) }}
-                                </div>
-                            </div>
-                            <div class="mt-4 text-[14px] text-gray-800">
-                                Shipping
-                            </div>
-                            <div class="justify-start flex">
-                                <dl
-                                    class="mb-3 italic space-y-px text-[10px] text-blue-600"
+                                <div v-else></div>
+                                <div
+                                    v-if="
+                                        totalDiscountAmount &&
+                                        totalDiscountAmount > 0
+                                    "
                                 >
-                                    Vietnam: Recipient pays for shipping service
-                                    at the time of delivery.
-                                </dl>
-                            </div>
-                            <div>
-                                <fieldset class="space-y-2 mr-4">
-                                    <div>
-                                        <label
-                                            for="paypal"
-                                            class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-100 p-1 text-sm font-medium shadow-sm hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
-                                        >
-                                            <p class="text-gray-700">Paypal</p>
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                value="paypal"
-                                                id="paypal"
-                                                class="sr-only"
-                                                v-model="payment"
-                                            />
-                                        </label>
+                                    <span class="text-[12px]">
+                                        <dt class="inline mr-1">
+                                            Total discount:
+                                        </dt>
+                                        <dd class="inline text-gray-700">
+                                            {{
+                                                formatCurrency(
+                                                    totalDiscountAmount
+                                                )
+                                            }}
+                                        </dd>
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <div class="text-[14px] text-gray-800">
+                                        Total price
                                     </div>
-                                    <div>
-                                        <label
-                                            for="qr"
-                                            class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-100 p-1 text-sm font-medium shadow-sm hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
-                                        >
-                                            <p class="text-gray-600">
-                                                Quét mã QR code
-                                            </p>
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                value="qr"
-                                                id="qr"
-                                                class="sr-only"
-                                                v-model="payment"
-                                            />
-                                        </label>
+                                    <div class="text-[14px] text-gray-800 mr-5">
+                                        {{ formatCurrency(checkoutSubtotal) }}
                                     </div>
-                                    <div>
-                                        <label
-                                            for="bank"
-                                            class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-100 p-1 text-sm font-medium shadow-sm hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
-                                        >
-                                            <p class="text-gray-600">
-                                                Chuyển khoản ngân hàng
-                                            </p>
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                value="bank"
-                                                id="bank"
-                                                class="sr-only"
-                                                v-model="payment"
-                                            />
-                                        </label>
-                                    </div>
-                                    <div>
-                                        <label
-                                            for="meet"
-                                            class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-100 p-1 text-sm font-medium shadow-sm hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
-                                        >
-                                            <p class="text-gray-600">
-                                                Thanh toán khi nhận hàng
-                                            </p>
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                value="meet"
-                                                id="meet"
-                                                class="sr-only"
-                                                v-model="payment"
-                                            />
-                                        </label>
-                                    </div>
-                                </fieldset>
-                            </div>
-                            <div
-                                v-if="errorMessages.length"
-                                class="error-messages mt-3 text-xs text-red-600"
-                            >
-                                <ul>
-                                    <li
-                                        class="mt-1"
-                                        v-for="(error, index) in errorMessages"
-                                        :key="index"
+                                </div>
+                                <div class="mt-4 text-[14px] text-gray-800">
+                                    Shipping
+                                </div>
+                                <div class="justify-start flex">
+                                    <dl
+                                        class="mb-3 italic space-y-px text-[10px] text-blue-600"
                                     >
-                                        {{ error }}
-                                    </li>
-                                </ul>
+                                        Vietnam: Recipient pays for shipping
+                                        service at the time of delivery.
+                                    </dl>
+                                </div>
+                                <div>
+                                    <fieldset class="space-y-2 mr-4">
+                                        <div>
+                                            <label
+                                                for="vnpay"
+                                                class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-100 p-1 text-sm font-medium shadow-sm hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
+                                            >
+                                                <p class="text-gray-700">
+                                                    Thanh Toán trực tuyến
+                                                </p>
+                                                <input
+                                                    type="radio"
+                                                    name="payment"
+                                                    value="vnpay"
+                                                    id="vnpay"
+                                                    class="sr-only"
+                                                    v-model="payment"
+                                                />
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <label
+                                                for="meet"
+                                                class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-100 p-1 text-sm font-medium shadow-sm hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
+                                            >
+                                                <p class="text-gray-600">
+                                                    Thanh toán khi nhận hàng
+                                                </p>
+                                                <input
+                                                    type="radio"
+                                                    name="payment"
+                                                    value="meet"
+                                                    id="meet"
+                                                    class="sr-only"
+                                                    v-model="payment"
+                                                />
+                                            </label>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div
+                                    v-if="errorMessages.length"
+                                    class="error-messages mt-3 text-xs text-red-600"
+                                >
+                                    <ul>
+                                        <li
+                                            class="mt-1"
+                                            v-for="(
+                                                error, index
+                                            ) in errorMessages"
+                                            :key="index"
+                                        >
+                                            {{ error }}
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
+
                             <div class="my-4 flex justify-center">
                                 <div class="flex">
                                     <button
@@ -296,30 +278,13 @@
                                 </div>
                                 <div>
                                     <router-link to="/cart">
-                                        <a
-                                            href="#"
-                                            class="block rounded-xl bg-gray-800 hover:bg-black px-6 py-2 text-sm text-white transition"
+                                        <span
+                                            class="block rounded-xl bg-gray-800 hover:cursor-pointer hover:bg-black px-6 py-2 text-sm text-white transition"
                                         >
                                             Show cart
-                                        </a>
+                                        </span>
                                     </router-link>
                                 </div>
-                            </div>
-                        </div>
-                        <div v-else>
-                            <div class="flex my-3 mx-3">
-                                <p
-                                    class="text-[15px] italic mr-1 text-gray-700"
-                                >
-                                    No items.
-                                </p>
-                                <router-link to="/">
-                                    <a
-                                        class="text-[15px] italic text-blue-600 hover:text-blue-800"
-                                        href="#"
-                                        >Shopping Here</a
-                                    >
-                                </router-link>
                             </div>
                         </div>
                     </div>
@@ -340,7 +305,8 @@ export default {
             checkoutTotal: null,
             checkoutSubtotal: null,
             totalDiscountAmount: null,
-            voucherCode: null,
+            VoucherValue: null,
+            Voucher: null,
             name: "",
             email: "",
             phone: "",
@@ -349,10 +315,20 @@ export default {
             payment: "",
         };
     },
+    computed: {
+        ...mapGetters(["userData"]),
+    },
     mounted() {
+        if (this.userData) {
+            this.name = this.userData.name;
+            this.email = this.userData.email;
+            this.phone = this.userData.phone;
+            this.address = this.userData.address;
+        }
         axios
             .get("/api/checkout/view")
             .then((response) => {
+                // console.log(response.data);
                 if (
                     response.data.success == false &&
                     response.data.cart == false
@@ -361,11 +337,11 @@ export default {
                 }
                 if (response.data.success == true) {
                     this.cartCheckout = response.data.DETACheckout.cartCheckout;
-                    if (response.data.DETACheckout.voucherCode > 0) {
-                        this.voucherCode =
-                            response.data.DETACheckout.voucherCode;
+                    if (response.data.DETACheckout.VoucherValue > 0) {
+                        this.VoucherValue =
+                            response.data.DETACheckout.VoucherValue;
                     } else {
-                        this.voucherCode = null;
+                        this.VoucherValue = null;
                     }
 
                     this.cartQuantity = response.data.DETACheckout.cartQuantity;
@@ -375,6 +351,7 @@ export default {
                         response.data.DETACheckout.checkoutSubtotal;
                     this.totalDiscountAmount =
                         response.data.DETACheckout.totalDiscountAmount;
+                    this.Voucher = response.data.DETACheckout.voucherCode;
                 } else {
                     this.cartCheckout = null;
                 }
@@ -408,8 +385,11 @@ export default {
                     address: this.address,
                     note: this.note,
                     payment: this.payment,
+                    voucher: this.Voucher,
                 })
                 .then((response) => {
+                    // console.log(response.data.data);
+
                     if (
                         response.data.success == false &&
                         response.data.cart == false
@@ -417,7 +397,31 @@ export default {
                         this.$router.push({ name: "Error" });
                     }
                     if (response.data.success == true) {
-                        this.$router.push({ name: "Payment" });
+                        if (response.data.data.paymentName == "vnpay") {
+                            console.log(response.data.data.paymentName);
+                            axios
+                                .post("/api/handle/checkout/vnpay")
+                                .then((response) => {
+                                    console.log(response.data);
+                                    // if (response.data.success == true) {
+                                    //     this.fetchCart();
+                                    //     this.fetchCartData();
+                                    //     this.fetchCartQuantity();
+                                    // }
+                                    // if (response.data.success == false) {
+                                    //     this.isLoading = false;
+                                    //     this.showNotification(
+                                    //         response.data.error
+                                    //     );
+                                    // }
+                                })
+                                .catch((error) => {
+                                    this.isLoading = false;
+                                    console.error(error);
+                                });
+                        } else {
+                            this.$router.push({ name: "Payment" });
+                        }
                     } else if (response.data.errors) {
                         this.errorMessages = response.data.errors;
                     } else {

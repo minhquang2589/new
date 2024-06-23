@@ -10,13 +10,17 @@
                                 name="name"
                                 id="name"
                                 v-model="name"
-                                class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                placeholder="Content"
                             />
-                            <label
-                                for="name"
-                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                >Name content</label
-                            >
+                            <input
+                                type="text"
+                                name="link_url"
+                                id="link_url"
+                                v-model="link_url"
+                                class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                placeholder="Link url"
+                            />
                         </div>
                         <div class="mb-5">
                             <label
@@ -90,6 +94,7 @@ export default {
             images: [],
             status: false,
             name: "",
+            link_url: "",
         };
     },
     computed: {
@@ -104,11 +109,10 @@ export default {
         async sliderUpload() {
             const file = this.images[0];
             let formData = new FormData();
-
+            formData.append("link_url", this.link_url);
             formData.append("name", this.name);
             formData.append("status", this.status ? 1 : 0);
             formData.append("image", file);
-
             axios
                 .post("/api/slider/upload", formData, {
                     headers: {
@@ -116,7 +120,7 @@ export default {
                     },
                 })
                 .then((response) => {
-                    console.log(response.data);
+                    // console.log(response.data);
                     if (response.data.success == true) {
                         this.showNotification(response.data.message);
                     } else {

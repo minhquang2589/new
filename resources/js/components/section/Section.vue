@@ -1,41 +1,45 @@
 <template>
     <div
-        v-if="$route.meta.showSection"
-        class="overflow-hidden black-blur h-fit lg:h-screen lg:mt-0 mt-10 sm:grid sm:grid-cols-2 sm:items-center"
+        data-aos="fade-right"
+        data-aos-offset="300"
+        data-aos-easing="ease-in-sine"
     >
-        <div class="">
+        <div class="lg:flex lg:justify-center w-full px-2 lg:px-10 lg:my-20 my-16">
             <div
-                class="mx-auto mb-10 lg:mb-0 max-w-xl text-center ltr:sm:text-left rtl:sm:text-right"
+                class="overflow-hidden rounded-lg shadow-2xl md:grid md:grid-cols-3"
             >
-                <h2 class="text-2xl font-bold text-gray-900 md:text-3xl">
-                    <a :href="section.link ? section.link : '#'">{{
-                        section.title
-                    }}</a>
-                </h2>
-                <p class="hidden text-gray-600 md:mt-4 md:block">
-                    {{ section.description }}
-                </p>
-                <div class="mt-4 md:mt-8">
-                    <router-link to="/product/new">
-                        <a
-                            href="#"
-                            class="inline-block rounded-xl bg-gray-900 px-12 py-3 text-sm font-medium text-white transition hover:bg-black focus:outline-none focus:ring focus:ring-yellow-400"
-                            >Shopping now</a
+                <img
+                    @click="navigateToUrl(section.link_url)"
+                    :src="`/images/${section.image}`"
+                    class=" w-full object-cover md:h-full hover:cursor-pointer transition hover:scale-105"
+                />
+                <div
+                    class="flex justify-center items-center w-full md:col-span-2"
+                >
+                    <div class="p-4 text-center sm:p-6 lg:p-8">
+                        <h2 class="mt-6 font-black uppercase">
+                            <span
+                                class="text-4xl font-black sm:text-5xl lg:text-6xl"
+                            >
+                                {{ section.name }}
+                            </span>
+
+                            <p
+                                class="mt-8 text-xs font-medium uppercase text-gray-400"
+                            >
+                                {{ section.description }}
+                            </p>
+                        </h2>
+
+                        <span
+                            class="mt-8 hover:cursor-pointer rounded inline-block w-full bg-black py-4 text-sm font-bold uppercase tracking-widest text-white"
+                            @click="navigateToUrl(section.link_url)"
                         >
-                    </router-link>
+                            Shopping
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="mb-2 lg:mb-0">
-            <router-link to="/product/new">
-                <a href="#">
-                    <img
-                        :src="`/images/${section.image}`"
-                        alt=""
-                        class="h-full px-1 lg:px-0 w-full object-cover sm:h-[calc(100%_-_2rem)] sm:self-end sm:rounded-ss-[30px] md:h-[calc(100%_-_4rem)] md:rounded-ss-[100px]"
-                    />
-                </a>
-            </router-link>
         </div>
     </div>
 </template>
@@ -56,8 +60,21 @@ export default {
                 this.section = response.data.section;
             })
             .catch((error) => {
-                console.error("Error fetching section 02 data:", error);
+                console.error("Error fetching section data:", error);
             });
+    },
+    methods: {
+        navigateToUrl(url) {
+            if (url) {
+                window.location.href = url;
+            }
+        },
     },
 };
 </script>
+
+<style scoped>
+.image_section {
+    z-index: 1;
+}
+</style>

@@ -1,4 +1,5 @@
 <template>
+    <LoadingSpinner :isLoading="isLoading" />
     <div class="modal-addcart">
         <div class="modal-content-addcart">
             <p class="text-black text-center text-sm">
@@ -34,88 +35,48 @@
             </ul>
         </div>
     </div>
-    <div class="modal-sizechart" ref="modalSizechart">
-        <div class="modal-sizechart-content">
-            <div class="flex justify-end">
-                <button class="closeModalSizeBtn" @click="closeModalSize">
-                    X
-                </button>
-            </div>
-            <img
-                class="image-detail"
-                src="https://cdn.shopify.com/s/files/1/0027/1400/9711/files/Screenshot_2020-07-14_at_18.35.22_2048x2048.png?v=1594744684"
-                alt="size chart"
-            />
-        </div>
-    </div>
     <div class="text-center">
-        <h1 class="text-xl font-bold mt-5 text-gray-900 sm:text-3xl">
+        <h1 class="text-xl font-bold mt-6 lg:mt-8 text-gray-900 sm:text-3xl">
             Product View
         </h1>
     </div>
-    <span class="flex mt-3 items-center">
-        <span class="h-px flex-1 bg-slate-200"></span>
-    </span>
-    <div class="grid grid-cols-1 lg:grid-cols-4">
+    <div class="grid mt-3 grid-cols-1 lg:grid-cols-4">
         <div class="standing-viewcart ml-1 px-5 content-center">
-            <div>
+            <div v-if="ProductDetails">
                 <div class="flex justify-start lg:px-8 pt-3">
                     <strong class="text-gray-900 text-sm italic"
                         >Product Details</strong
                     >
                 </div>
-                <div class="lg:px-8">
-                    <span
-                        v-if="ProductDetail.product_description1"
-                        class="italic text-[12px]"
-                    >
-                        {{ ProductDetail.product_description1 }}
-                    </span>
+                <div class="lg:px-8 mb-5">
                     <ul class="my-3 ml-3 lg:mt-6 lg:ml-5">
-                        <li
-                            v-if="ProductDetail.product_description2"
-                            class="text-xs italic"
-                        >
-                            - {{ ProductDetail.product_description2 }}
-                        </li>
-                        <li
-                            v-if="ProductDetail.product_description3"
-                            class="text-xs italic"
-                        >
-                            - {{ ProductDetail.product_description3 }}
-                        </li>
-                        <li
-                            v-if="ProductDetail.product_description4"
-                            class="text-xs italic"
-                        >
-                            - {{ ProductDetail.product_description4 }}
-                        </li>
-                        <li
-                            v-if="ProductDetail.product_description5"
-                            class="text-xs italic"
-                        >
-                            - {{ ProductDetail.product_description5 }}
-                        </li>
-                        <li
-                            v-if="ProductDetail.product_description6"
-                            class="text-xs italic"
-                        >
-                            - {{ ProductDetail.product_description6 }}
+                        <li v-for="detail in ProductDetails" class="text-xs">
+                            - {{ detail.description }}
                         </li>
                     </ul>
+                    <div class="text-[12px]">Name: {{ product.name }}</div>
                     <div
                         v-if="colors && colors.length > 0"
-                        v-for="color in colors"
-                        :key="color.id"
-                        class="mt-9 italic text-[12px]"
+                        class="mt-9 inline text-[12px]"
                     >
-                        Color: {{ color.color }}
+                        Color:
+                        <span
+                            v-for="(color, index) in colors"
+                            :key="color.id"
+                            class="inline"
+                        >
+                            {{ color.color }}
+                            <span v-if="index < colors.length - 1">,</span>
+                        </span>
+                    </div>
+                    <div v-if="ProductDetail.category_name" class="text-[12px]">
+                        For: {{ ProductDetail.category_name }}
                     </div>
                     <div
-                        v-if="ProductDetail.category_name"
-                        class="italic text-[12px]"
+                        v-if="soldQuantity != null && soldQuantity > 0"
+                        class="text-[12px]"
                     >
-                        For: {{ ProductDetail.category_name }}
+                        {{ soldQuantity }} products sold
                     </div>
                 </div>
             </div>
@@ -127,6 +88,7 @@
                         v-for="ProductDetailImg in ProductDetailImg"
                         :key="ProductDetailImg.id"
                         class="mb-2"
+                        data-aos="zoom-out-up"
                     >
                         <img
                             class="image-detail"
@@ -185,12 +147,14 @@
                     {{ product.name }}
                 </h3>
                 <p class="text-[12px] text-gray-700">
-                    {{ formatCurrency(product.price) }}
+                    {{ this.formatCurrency(product.price) }}
                 </p>
                 <p
                     class="text-sm text-gray-700 mt-2 hover:text-blue-700 hover:underline"
                 >
-                    <button @click="openModalSize()">size guize</button>
+                    <button class="text-xs underline" @click="openModalSize()">
+                        SIZE CHART
+                    </button>
                 </p>
                 <form @submit.prevent="addToCart">
                     <div class="flex">
@@ -286,8 +250,8 @@
                     </div>
                     <div class="flex lg:justify-start justify-center mt-3">
                         <div class="mr-2">
-                            <a
-                                class="group relative inline-flex items-center overflow-hidden rounded-full border px-6 py-2 text-gray-600 focus:outline-none focus:ring active:text-gray-700"
+                            <div
+                                class="group hover:border-red-500 relative inline-flex items-center overflow-hidden rounded-full border px-6 py-2 text-gray-600 focus:outline-none focus:ring active:text-gray-700"
                             >
                                 <span
                                     class="absolute -end-full transition-all group-hover:end-4"
@@ -315,11 +279,11 @@
                                         Add to Cart
                                     </button>
                                 </div>
-                            </a>
+                            </div>
                         </div>
                         <div>
-                            <a
-                                class="group relative inline-flex items-center overflow-hidden rounded-full border px-8 py-2 text-gray-600 focus:outline-none focus:ring active:text-gray-700"
+                            <div
+                                class="group hover:border-red-500 relative inline-flex items-center overflow-hidden rounded-full border px-8 py-2 text-gray-600 focus:outline-none focus:ring active:text-gray-700"
                             >
                                 <span
                                     class="absolute -end-full transition-all group-hover:end-4"
@@ -348,7 +312,7 @@
                                         Buy now
                                     </button>
                                 </div>
-                            </a>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -366,9 +330,13 @@
         </span>
         <div v-html="product.description"></div>
     </div>
-    <div>
-        <RelatedProduct />
-    </div>
+
+    <RelatedProduct />
+    <sizeChart
+        :showModalSize="showModalSizeChart"
+        @closeModalSize="closeModalSize"
+        :categoryProp="cateName"
+    />
 </template>
 
 <script>
@@ -377,22 +345,30 @@ import { ref, onMounted, watch } from "vue";
 import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import LoadingSpinner from "../layout/LoadingSpinner.vue";
+import sizeChart from "../modal/SizeChart.vue";
 export default {
     props: ["id"],
     components: {
         RelatedProduct,
+        LoadingSpinner,
+        sizeChart,
     },
     data() {
         return {
+            selectedProduct: null,
+            showModal: false,
             errorMessages: [],
             product: [],
             productVariant: [],
             productInfor: [],
             ProductDetailImg: [],
             ProductDetail: [],
+            ProductDetails: [],
             sizes: [],
             colors: [],
             quantity: 1,
+            soldQuantity: null,
             stockQuantity: null,
             product_id: null,
             discount_id: null,
@@ -406,6 +382,9 @@ export default {
                 quantity: null,
                 name: null,
             },
+            isLoading: true,
+            showModalSizeChart: false,
+            cateName: null,
         };
     },
 
@@ -428,8 +407,24 @@ export default {
             this.quantity = 1;
         },
     },
+    computed: {
+        ...mapGetters(["formatCurrency"]),
+    },
     methods: {
+        openModalSize() {
+            this.showModalSizeChart = true;
+        },
+        closeModalSize() {
+            this.showModalSizeChart = false;
+        },
         ...mapActions(["fetchCartQuantity"]),
+        showProductDetail(product) {
+            this.selectedProduct = product;
+            this.showModal = true;
+        },
+        closeModal() {
+            this.showModal = false;
+        },
         showNotification(quantity, color, size, image, name) {
             var modal = document.querySelector(".modal-addcart");
             modal.style.display = "block";
@@ -440,7 +435,7 @@ export default {
             this.notification.name = name;
             setTimeout(() => {
                 modal.style.display = "none";
-            }, 1800);
+            }, 3000);
         },
         decreaseQuantity() {
             if (this.quantity > 1) {
@@ -454,6 +449,7 @@ export default {
             this.addToCart(true);
         },
         addToCart(redirectToCheckout = false) {
+            this.errorMessages = [];
             axios
                 .post("/api/add-cart", {
                     product_id: this.product_id,
@@ -464,6 +460,7 @@ export default {
                     quantity: this.quantity,
                 })
                 .then((response) => {
+                    // console.log(response.data);
                     if (response.data.success == true) {
                         if (redirectToCheckout == true) {
                             this.$router.push({ name: "Checkout" });
@@ -517,22 +514,42 @@ export default {
                 .get(`/api/product/view/${id}`)
                 .then((response) => {
                     this.product = response.data.product;
+                    this.cateName = response.data.product.class;
+                   
                     this.ProductDetailImg = response.data.ProductDetailImg;
                     this.sizes = response.data.sizes;
                     this.colors = response.data.colors;
-                    this.ProductDetail = response.data.product_info;
                     this.product_id = this.product.id;
                     this.discount_id = this.product.discount_id;
                     this.discountPercent = this.product.discount;
                     this.size = null;
                     this.color = null;
+                    this.ProductDetail = response.data.product_info;
+                    this.ProductDetails = response.data.productDetails;
+                    this.soldQuantity = this.product.sales_count;
+                    this.addToRecentlyViewed(response.data.product.id);
                     this.checkStock();
-
                     this.initializeSwiper();
+                    this.isLoading = false;
+
                     // window.scrollTo({ top: 0, behavior: "smooth" });
                 })
                 .catch((error) => {
+                    this.isLoading = false;
+
                     console.log(error);
+                });
+        },
+        async addToRecentlyViewed(productId) {
+            let formData = new FormData();
+            formData.append("productId", productId);
+            axios
+                .post("/api/addToRecently", formData)
+                .then((response) => {
+                    //   console.log(response.data);
+                })
+                .catch((error) => {
+                    console.error(error);
                 });
         },
         initializeSwiper() {
@@ -550,20 +567,6 @@ export default {
                 cssMode: true,
                 keyboard: true,
             });
-        },
-        formatCurrency(value) {
-            return new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-            }).format(value);
-        },
-        openModalSize() {
-            const modal = this.$refs.modalSizechart;
-            modal.classList.add("show");
-        },
-        closeModalSize() {
-            const modal = this.$refs.modalSizechart;
-            modal.classList.remove("show");
         },
     },
 };

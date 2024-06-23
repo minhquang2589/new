@@ -3,6 +3,16 @@
         <div class="px-4 py-6">
             <ul class="space-y-1">
                 <li>
+                    <router-link to="/shop/item">
+                        <a
+                            href=""
+                            class="block hover:bg-gray-300 rounded-lg text-gray-800 px-4 py-2 text-sm font-medium"
+                        >
+                            Items
+                        </a>
+                    </router-link>
+                </li>
+                <li>
                     <details
                         class="group [&_summary::-webkit-details-marker]:hidden"
                     >
@@ -41,6 +51,156 @@
 
                             <li>
                                 <router-link to="/product/update">
+                                    <a
+                                        href="#"
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Update
+                                    </a>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+                <li>
+                    <details
+                        class="group [&_summary::-webkit-details-marker]:hidden"
+                    >
+                        <summary
+                            class="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-800 hover:bg-gray-300 hover:text-black"
+                        >
+                            <span class="text-sm font-medium">Size chart </span>
+                            <span
+                                class="shrink-0 transition duration-300 group-open:-rotate-180"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </summary>
+                        <ul class="mt-2 space-y-1 px-4">
+                            <li>
+                                <router-link to="/sizechart/upload">
+                                    <a
+                                        href=""
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Upload
+                                    </a>
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/sizechart/update">
+                                    <a
+                                        href="#"
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Update
+                                    </a>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+                <li>
+                    <details
+                        class="group [&_summary::-webkit-details-marker]:hidden"
+                    >
+                        <summary
+                            class="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-800 hover:bg-gray-300 hover:text-black"
+                        >
+                            <span class="text-sm font-medium">Slider bag </span>
+                            <span
+                                class="shrink-0 transition duration-300 group-open:-rotate-180"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </summary>
+                        <ul class="mt-2 space-y-1 px-4">
+                            <li>
+                                <router-link to="/slider/bag/upload">
+                                    <a
+                                        href=""
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Upload
+                                    </a>
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/slider/bag/update">
+                                    <a
+                                        href="#"
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Update
+                                    </a>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+                <li>
+                    <details
+                        class="group [&_summary::-webkit-details-marker]:hidden"
+                    >
+                        <summary
+                            class="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-800 hover:bg-gray-300 hover:text-black"
+                        >
+                            <span class="text-sm font-medium">Video </span>
+                            <span
+                                class="shrink-0 transition duration-300 group-open:-rotate-180"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </summary>
+                        <ul class="mt-2 space-y-1 px-4">
+                            <li>
+                                <router-link to="/video/upload">
+                                    <a
+                                        href=""
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Upload
+                                    </a>
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/video/update">
                                     <a
                                         href="#"
                                         class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
@@ -207,6 +367,106 @@
                         <summary
                             class="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-800 hover:bg-gray-300 hover:text-black"
                         >
+                            <span class="text-sm font-medium">Shop </span>
+                            <span
+                                class="shrink-0 transition duration-300 group-open:-rotate-180"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </summary>
+                        <ul class="mt-2 space-y-1 px-4">
+                            <li>
+                                <router-link to="/shop/upload">
+                                    <a
+                                        href="#"
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Upload
+                                    </a>
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/shop/update">
+                                    <a
+                                        href="#"
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Update
+                                    </a>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+                <li>
+                    <details
+                        class="group [&_summary::-webkit-details-marker]:hidden"
+                    >
+                        <summary
+                            class="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-800 hover:bg-gray-300 hover:text-black"
+                        >
+                            <span class="text-sm font-medium">Contact </span>
+                            <span
+                                class="shrink-0 transition duration-300 group-open:-rotate-180"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </summary>
+                        <ul class="mt-2 space-y-1 px-4">
+                            <li>
+                                <router-link to="/contact/upload">
+                                    <a
+                                        href=""
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Upload
+                                    </a>
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/contact/update">
+                                    <a
+                                        href="#"
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Update
+                                    </a>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+                <li>
+                    <details
+                        class="group [&_summary::-webkit-details-marker]:hidden"
+                    >
+                        <summary
+                            class="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-800 hover:bg-gray-300 hover:text-black"
+                        >
                             <span class="text-sm font-medium">Slider </span>
                             <span
                                 class="shrink-0 transition duration-300 group-open:-rotate-180"
@@ -250,28 +510,34 @@
                     </details>
                 </li>
                 <li>
-                    <a
-                        href=""
-                        class="block hover:bg-gray-300 rounded-lg text-gray-800 px-4 py-2 text-sm font-medium"
-                    >
-                        Discounts
-                    </a>
+                    <router-link to="/discount/update">
+                        <a
+                            href=""
+                            class="block hover:bg-gray-300 rounded-lg text-gray-800 px-4 py-2 text-sm font-medium"
+                        >
+                            Discounts
+                        </a>
+                    </router-link>
                 </li>
                 <li>
-                    <a
-                        href="/customers"
-                        class="block hover:bg-gray-300 rounded-lg text-gray-800 px-4 py-2 text-sm font-medium"
-                    >
-                        Customers
-                    </a>
+                    <router-link to="/customers">
+                        <a
+                            href=""
+                            class="block hover:bg-gray-300 rounded-lg text-gray-800 px-4 py-2 text-sm font-medium"
+                        >
+                            Customers
+                        </a>
+                    </router-link>
                 </li>
                 <li>
-                    <a
-                        href="/ordermanagements"
-                        class="block hover:bg-gray-300 rounded-lg text-gray-800 px-4 py-2 text-sm font-medium"
-                    >
-                        Order Managements
-                    </a>
+                    <router-link to="/orders">
+                        <a
+                            href=""
+                            class="block hover:bg-gray-300 rounded-lg text-gray-800 px-4 py-2 text-sm font-medium"
+                        >
+                            Order Managements
+                        </a>
+                    </router-link>
                 </li>
                 <li>
                     <details
@@ -300,12 +566,114 @@
                         </summary>
                         <ul class="mt-2 space-y-1 px-4">
                             <li>
-                                <a
-                                    href="/usermanagement"
-                                    class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                <router-link to="/account/users">
+                                    <a
+                                        href=""
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        User
+                                    </a>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+                <li>
+                    <details
+                        class="group [&_summary::-webkit-details-marker]:hidden"
+                    >
+                        <summary
+                            class="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-800 hover:bg-gray-300 hover:text-black"
+                        >
+                            <span class="text-sm font-medium">About </span>
+                            <span
+                                class="shrink-0 transition duration-300 group-open:-rotate-180"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
                                 >
-                                    User
-                                </a>
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </summary>
+                        <ul class="mt-2 space-y-1 px-4">
+                            <li>
+                                <router-link to="/about/upload">
+                                    <a
+                                        href=""
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Upload
+                                    </a>
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/about/update">
+                                    <a
+                                        href="#"
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Update
+                                    </a>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+                <li>
+                    <details
+                        class="group [&_summary::-webkit-details-marker]:hidden"
+                    >
+                        <summary
+                            class="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-800 hover:bg-gray-300 hover:text-black"
+                        >
+                            <span class="text-sm font-medium">Lookbooks </span>
+                            <span
+                                class="shrink-0 transition duration-300 group-open:-rotate-180"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </summary>
+                        <ul class="mt-2 space-y-1 px-4">
+                            <li>
+                                <router-link to="/lookbook/upload">
+                                    <a
+                                        href=""
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Upload
+                                    </a>
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/lookbook/update">
+                                    <a
+                                        href="#"
+                                        class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 hover:text-black"
+                                    >
+                                        Update
+                                    </a>
+                                </router-link>
                             </li>
                         </ul>
                     </details>

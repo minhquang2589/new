@@ -13,68 +13,13 @@ use Illuminate\Support\Facades\DB;
 
 class SliderController extends Controller
 {
-
-    // public function sliderEdit(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string',
-    //         'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return redirect()->back()->withErrors($validator)->withInput();
-    //     }
-    //     try {
-    //         DB::beginTransaction();
-    //         if ($request->hasFile('image')) {
-    //             $image = $request->file('image');
-    //             $fileName = time() . '_' . $image->getClientOriginalName();
-    //             $image->move(public_path('images'), $fileName);
-    //         } else {
-    //             return redirect()->back()->with('error', 'Please choose an image to upload.');
-    //         }
-    //         $slider = new Slider();
-    //         $slider->name = $request->input('name');
-    //         $slider->image = $fileName;
-    //         $slider->status = $request->input('status') === 'on' ? 1 : 0;
-    //         $slider->description = $request->input('description') ?? null;
-    //         $slider->save();
-    //         DB::commit();
-    //         return redirect()->back()->with('success', 'slider upload successfully.');
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return redirect()->back()->with('error', 'Failed to upload slider.');
-    //     }
-    // }
-    // ///
-
-    // //
-    // public function sliderUpload(){
-    //     return view ('slider.upload');
-    // }
-    // public function editView(Request $request)
-    // {
-    //     $data = $request->all();
-    //     $status = isset($data['status']) && $data['status'] === 'on' ? '1' : '0';
-    //     $editViewSlider = Slider::find($data['id']);
-    //     if ($request->hasFile('imgcontent')) {
-    //         $image = $request->file('imgcontent');
-    //         $imageName = time() . '.' . $image->getClientOriginalExtension();
-    //         $image->move(public_path('images'), $imageName);
-    //         $editViewSlider->image = $imageName;
-    //     }
-    //     $editViewSlider->name = $data['content'];
-    //     $editViewSlider->status = $status;
-    //     $editViewSlider->save();
-    //     return redirect()->back()->with('success', 'Update Slider successfully!');
-    // }
     /////
     public function getSlider()
     {
-        $slider = Slider::all();
+        $slider = slider::where('status', 1)->get();
         return response()->json([
             'success' => true,
-            'slider' =>  $slider,
+            'slider' => $slider
         ]);
     }
     public function getSliderSale()
@@ -105,7 +50,8 @@ class SliderController extends Controller
                 'discounts.status'
             )
             ->orderByDesc('products.sales_count')
-            ->take(8)
+            ->inRandomOrder()
+            ->take(11)
             ->get();
         return response()->json([
             'success' => true,
@@ -120,6 +66,7 @@ class SliderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
+            'link_url' => 'required|string',
             'status' => 'required',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -142,11 +89,11 @@ class SliderController extends Controller
                     'error' => ['Please choose an image to upload.']
                 ]);
             }
-            $slider = new Slider();
+            $slider = new slider();
             $slider->name = $request->input('name');
+            $slider->link_url = $request->input('link_url');
             $slider->image = $fileName;
-            $slider->status = $request->input('status') === 'on' ? 1 : 0;
-            $slider->description = $request->input('description') ?? null;
+            $slider->status = $request->status;
             $slider->save();
             DB::commit();
             return response()->json([
@@ -157,7 +104,7 @@ class SliderController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'error' => ['Failed to delete section.']
+                'error' => [$e->getMessage()]
             ]);
         }
     }
@@ -212,9 +159,9 @@ class SliderController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:100',
+            'name' => 'required|string',
+            'link_url' => 'required|string',
             'status' => 'required',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -225,19 +172,18 @@ class SliderController extends Controller
         }
         try {
             DB::beginTransaction();
-            $editViewSlider = Slider::find($request->sliderId);
+            $editViewSlider = slider::find($request->sliderId);
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
                 $fileName = time() . '_' . $image->getClientOriginalName();
                 $image->move(public_path('images'), $fileName);
-
                 $editViewSlider->image = $fileName;
             }
             $editViewSlider->name = $request->name;
             $editViewSlider->status = $request->status;
+            $editViewSlider->link_url = $request->link_url;
             $editViewSlider->save();
             DB::commit();
-
             return response()->json([
                 'success' => true,
                 'message' => ['Update Slider successfully!']

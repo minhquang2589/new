@@ -1,16 +1,17 @@
 <template>
-    <div v-if="$route.meta.showSlider" class="swiper-container swiper">
+    <div v-if="$route.meta.showSlider && dataSlider != null" class="swiper-container swiper">
         <div class="slider_1">
             <div class="swiper_1 mySwiper_1">
                 <div class="swiper-wrapper">
                     <div
-                        v-for="slider in Slider"
-                        :key="slider.id"
-                        class="swiper-slide swiper-image"
+                        v-for="value in dataSlider"
+                        :key="value.id"
+                        @click="navigateToUrl(value.link_url)"
+                        class="swiper-slide swiper-image hover:cursor-pointer"
                     >
                         <img
-                            :src="'/images/' + slider.image"
-                            :alt="slider.image"
+                            :src="`/images/${value.image}`"
+                            :alt="value.image"
                         />
                     </div>
                 </div>
@@ -30,7 +31,7 @@ export default {
     name: "Slider",
     data() {
         return {
-            Slider: [],
+            dataSlider: [],
             progressCircle: null,
             progressContent: null,
         };
@@ -39,11 +40,17 @@ export default {
         this.fetchData();
     },
     methods: {
+        navigateToUrl(url) {
+            if (url) {
+                window.location.href = url;
+            }
+        },
         fetchData() {
             axios
                 .get("/api/slider")
                 .then((response) => {
-                    this.Slider = response.data.slider;
+                    // console.log(response.data);
+                    this.dataSlider = response.data.slider;
                     this.$nextTick(() => {
                         this.initSwiper();
                     });

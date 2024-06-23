@@ -15,15 +15,18 @@ class ProductVariant extends Model
         'discount_id',
         'quantity',
     ];
+
     public function color()
     {
         return $this->belongsTo(Color::class);
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 
     public function size()
     {
         return $this->belongsTo(Size::class);
     }
-
-    
 }

@@ -4,19 +4,42 @@
             <div class="lg:flex justify-center">
                 <div class="w-full mx-4">
                     <div class="">
+                        <div class="flex mb-5 items-center gap-4">
+                            <img
+                                :src="imagePreviewUrl"
+                                class="size-28 rounded object-cover"
+                            />
+                            <button
+                                type="button"
+                                @click="triggerFileInput"
+                                class="rounded hover:underline"
+                            >
+                                Change
+                            </button>
+                            <input
+                                type="file"
+                                ref="fileInput"
+                                @change="handleFileUpload"
+                                class="hidden"
+                            />
+                        </div>
                         <div class="relative z-0 mb-2 group">
                             <input
                                 type="text"
-                                name="title"
-                                id="title"
-                                v-model="title"
-                                class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                name="name"
+                                id="name"
+                                v-model="name"
+                                class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                placeholder="Name"
                             />
-                            <label
-                                for="title"
-                                class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                >Title</label
-                            >
+                            <input
+                                type="text"
+                                name="link_url"
+                                id="link_url"
+                                v-model="link_url"
+                                class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                                placeholder="Link url"
+                            />
                         </div>
                         <div class="mt-2">
                             <textarea
@@ -26,24 +49,6 @@
                                 lg:row="9"
                                 v-model="description"
                             ></textarea>
-                        </div>
-                        <div class="">
-                            <label
-                                class="block mb-2 text-sm font-medium text-gray-500 dark:text-gray-400"
-                                for="content3"
-                                >Image</label
-                            >
-                            <input
-                                require
-                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                aria-describedby="image"
-                                for="images"
-                                type="file"
-                                id="image-input"
-                                name="images[]"
-                                multiple
-                                @change="handleImageUpload"
-                            />
                         </div>
                         <div class="mt-2">
                             <label>
@@ -91,7 +96,7 @@
 import { mapGetters, mapMutations, mapActions } from "vuex";
 import Dashboard from "@/components/Dashboard.vue";
 export default {
-    name: "EditSection",
+    name: "editSection",
     components: {
         Dashboard,
     },
@@ -100,8 +105,11 @@ export default {
             errorMessages: [],
             images: [],
             status: false,
-            title: "",
+            name: "",
             description: "",
+            link_url: "",
+            imagePreviewUrl: null,
+            fileName: "",
         };
     },
     mounted() {
@@ -119,11 +127,13 @@ export default {
                 const response = await axios.get(
                     `/api/section/edit/${sectionId}`
                 );
-
+                //  console.log(response.data);
                 if (response.data.success == true) {
-                    this.title = response.data.dataSection.title;
+                    this.name = response.data.dataSection.name;
+                    this.link_url = response.data.dataSection.link_url;
                     this.description = response.data.dataSection.description;
                     this.status = response.data.dataSection.status;
+                    this.imagePreviewUrl = `/images/${response.data.dataSection.image}`;
                 } else {
                     console.log("voucher edit error.");
                 }
@@ -131,20 +141,29 @@ export default {
                 console.error("Error fetching voucher data:", error);
             }
         },
-        handleImageUpload(event) {
+        triggerFileInput() {
+            this.$refs.fileInput.click();
+        },
+        handleFileUpload(event) {
             const file = event.target.files[0];
-            this.images = [file];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    this.imagePreviewUrl = reader.result;
+                };
+                reader.readAsDataURL(file);
+            }
+            this.fileName = [file];
         },
         async sectionUpdate() {
-            const file = this.images[0];
             const sectionId = this.$route.params.id;
             let formData = new FormData();
-            formData.append("title", this.title);
+            formData.append("name", this.name);
+            formData.append("link_url", this.link_url);
             formData.append("description", this.description);
             formData.append("status", this.status ? 1 : 0);
-            formData.append("image", file);
+            formData.append("image", this.fileName[0]);
             formData.append("sectionId", sectionId);
-
             axios
                 .post("/api/section/update", formData, {
                     headers: {
@@ -152,7 +171,7 @@ export default {
                     },
                 })
                 .then((response) => {
-                  //   console.log(response.data);
+                    //   console.log(response.data);
                     if (response.data.success == true) {
                         this.showNotification(response.data.message);
                     } else {

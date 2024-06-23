@@ -1,42 +1,70 @@
 <template>
-    <div class="flex items-center justify-between bg-gray-600">
+    <div class="flex items-center justify-between bg-black">
         <div>
-            <span v-if="isAdmin" class="ml-3 text-white text-sm"> Admin </span>
+            <router-link to="/dashboard">
+                <span
+                    class="ml-3 text-white text-sm hover:underline hover:cursor-pointer"
+                    >{{ userData.name }}
+                </span>
+            </router-link>
         </div>
         <div class="text-white text-sm">
             <div class="flex">
-                <router-link to="/Dashboard">
-                    <a class="hover:underline">Dashboard</a>
-                </router-link>
+                <div class="ml-2">
+                    <span class="hover:underline hover:cursor-pointer">
+                        <p @click="goToProductEditPage">
+                            {{ pageTitle }}
+                        </p>
+                    </span>
+                </div>
             </div>
         </div>
         <div class="text-white mt-1 text-sm mr-3">
-            <span class="hover:underline">
-                <a href="#" @click="logout">Logout</a>
+            <span class="hover:underline hover:cursor-pointer">
+                <p @click="logout">Logout</p>
             </span>
         </div>
     </div>
 </template>
 <script>
+import { mapGetters, mapMutations, mapActions } from "vuex";
 import axios from "axios";
+import Swal from "sweetalert2";
+
 export default {
     name: "AdminHeader",
-    props: {
-        isAdmin: {
-            type: Boolean,
-            required: true,
+    computed: {
+        id() {
+            return this.$route.params.id;
         },
+        pageTitle() {
+            switch (this.$route.name) {
+                case "EditProduct":
+                    return `Edit product ${this.id}`;
+                default:
+                    if (this.$route.name == "ViewProduct") {
+                        return "Edit product";
+                    }
+            }
+        },
+        ...mapGetters(["userData"]),
     },
     methods: {
+        ...mapActions(["fetchUser"]),
+        goToProductEditPage() {
+            const id = this.id;
+            this.$router.push({
+                name: "EditProduct",
+                params: { id: id },
+            });
+        },
         logout() {
             axios
                 .post("/api/logout")
                 .then((response) => {
                     if (response.data.success) {
+                        this.fetchUser();
                         this.$router.push({ name: "Login" });
-                        window.location.reload();
-                    } else {
-                        console.error("Failed to log out");
                     }
                 })
                 .catch((error) => {

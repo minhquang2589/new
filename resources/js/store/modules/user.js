@@ -6,6 +6,7 @@ const state = {
       isAdmin: false,
       isAuthenticated: false,
    },
+   userdata: null,
 };
 
 const mutations = {
@@ -16,6 +17,9 @@ const mutations = {
          isAuthenticated: true,
       };
    },
+   setUserData(state, userdata) {
+      state.userdata = userdata;
+   },
 };
 
 const actions = {
@@ -23,7 +27,9 @@ const actions = {
       axios
          .get('/api/user')
          .then((response) => {
+            // console.log(response.data);
             commit('setUser', response.data);
+            commit('setUserData', response.data.user);
          })
          .catch(() => {
             commit('setUser', { isAdmin: false, isAuthenticated: false });
@@ -33,6 +39,7 @@ const actions = {
 
 const getters = {
    isAdmin: (state) => state.user.isAdmin,
+   userData: (state) => state.userdata,
    isAuthenticated: (state) => state.user.isAuthenticated,
 };
 
