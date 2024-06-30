@@ -1,6 +1,10 @@
 <template>
     <div
-        v-if="SliderRecently.length > 0 && SliderRecently!=null && $route.meta.showSliderRecently"
+        v-if="
+            SliderRecently.length > 0 &&
+            SliderRecently != null &&
+            $route.meta.showSliderRecently
+        "
         class="sl_2"
     >
         <div class="my-5 flex justify-center">
@@ -45,7 +49,10 @@
                         <router-link
                             :to="{
                                 name: 'ViewProduct',
-                                params: { id: slider.id },
+                                params: {
+                                    id: slider.id,
+                                    productName: slider.name,
+                                },
                             }"
                         >
                             <img

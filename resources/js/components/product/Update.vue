@@ -66,14 +66,24 @@
                                 <tr>
                                     <td class="lg:w-2/12 w-4/12">
                                         <img
-                                            @click="viewProduct(product.id)"
+                                            @click="
+                                                viewProduct(
+                                                    product.id,
+                                                    product.name
+                                                )
+                                            "
                                             :src="`/images/${product.image}`"
                                             :alt="product.name"
                                             class="object-cover w-full transition duration-500 group-hover:scale-105"
                                         />
                                     </td>
                                     <td
-                                        @click="viewProduct(product.id)"
+                                        @click="
+                                            viewProduct(
+                                                product.id,
+                                                product.name
+                                            )
+                                        "
                                         class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                                     >
                                         <div
@@ -217,10 +227,12 @@
         </Dashboard>
     </div>
 </template>
+
 <script>
 import { mapGetters, mapMutations, mapActions } from "vuex";
 import Dashboard from "@/components/Dashboard.vue";
 import Swal from "sweetalert2";
+import LoadingSpinner from "../layout/LoadingSpinner.vue";
 export default {
     name: "ProductUpdate",
     components: {
@@ -259,10 +271,11 @@ export default {
     },
     methods: {
         ...mapActions(["showNotification"]),
-        viewProduct(id) {
+        viewProduct(id, name) {
+            const productName = name.replace(/\s+/g, "-").toLowerCase();
             this.$router.push({
                 name: "ViewProduct",
-                params: { id: id },
+                params: { id: id, productName: productName },
             });
         },
         nextPage() {

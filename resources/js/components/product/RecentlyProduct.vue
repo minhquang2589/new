@@ -19,7 +19,7 @@
                         <div
                             class="group rounded-xl relative block overflow-hidden"
                         >
-                            <div @click="viewProduct(product.id)">
+                            <div @click="viewProduct(product.id, product.name)">
                                 <img
                                     :src="`/images/${product.image1}`"
                                     :alt="product.name"
@@ -64,7 +64,12 @@
                                     </div>
                                     <div
                                         class="text-xs my-2 hover:cursor-pointer"
-                                        @click="viewProduct(product.id)"
+                                        @click="
+                                            viewProduct(
+                                                product.id,
+                                                product.name
+                                            )
+                                        "
                                     >
                                         <p
                                             class="inline-block rounded-xl hover:border-red-500 border border-gray-400 text-gray-700 lg:px-3.5 px-2.5 py-1 text-sm font-medium transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring"
@@ -139,10 +144,11 @@ export default {
         window.removeEventListener("scroll", this.handleScroll);
     },
     methods: {
-        viewProduct(productId) {
+        viewProduct(id, name) {
+            const productName = name.replace(/\s+/g, "-").toLowerCase();
             this.$router.push({
                 name: "ViewProduct",
-                params: { id: productId },
+                params: { id: id, productName: productName },
             });
         },
         closeModal() {

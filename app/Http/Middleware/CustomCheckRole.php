@@ -24,14 +24,15 @@ class CustomCheckRole
         if (!Auth::check()) {
             return response()->json([
                 'success' => false,
-                'error' => ['You must log in to view this page!']
+                'error' => ['You must log in to view this page!'],
             ]);
         }
         $user = Auth::user();
         if (!$user || $user->role != 'admin') {
             return response()->json([
                 'success' => false,
-                'error' => ['You may not use this site!']
+                'error' => ['You may not use this site!'],
+               
             ]);
         }
         session(['isAdmin' => true]);

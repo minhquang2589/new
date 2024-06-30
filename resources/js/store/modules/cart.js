@@ -22,9 +22,6 @@ const mutations = {
    setCartQuantity(state, quantity) {
       state.cartQuantity = quantity;
    },
-   incrementCartQuantity(state) {
-      state.cartQuantity += 1;
-   },
    clearVoucher(state) {
       state.cartData.totalDiscountAmount = 0;
       state.cartData.total = Array.isArray(state.cart)
@@ -61,6 +58,7 @@ const actions = {
       axios
          .get('/api/cart/subtotal-total')
          .then((response) => {
+            // console.log(response.data);
             commit('setCartData', response.data);
          })
          .catch((error) => {
@@ -70,7 +68,9 @@ const actions = {
    fetchCartQuantity({ commit }) {
       axios
          .get('/api/cart-quantity')
+
          .then((response) => {
+            // console.log(response.data);
             commit('setCartQuantity', response.data.cartQuantity);
          })
          .catch((error) => {

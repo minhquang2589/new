@@ -8,7 +8,6 @@ use App\Models\ProductVariant;
 use App\Models\Size;
 use App\Models\Color;
 use App\Models\ProductCates;
-use App\Models\ProductDetails;
 use App\Models\Images;
 use Illuminate\Support\Facades\DB;
 

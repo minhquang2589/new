@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
+
 import axios from 'axios';
 import store from './store/';
 import Layout from "@/components/Layout.vue";
@@ -76,9 +78,7 @@ import Item from "./components/Item.vue";
 import contactUpload from "./components/contact/Upload.vue";
 import contactUpdate from "./components/contact/Update.vue";
 import contactEdit from "./components/contact/Edit.vue";
-
-
-
+import user from './store/modules/user';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -116,24 +116,24 @@ const router = createRouter({
           name: 'Dashboard',
           component: Dashboard,
           props: true,
-          meta: { title: 'Dashboard', requiresAuth: true, requiresAdmin: true }
+          meta: { title: 'Dashboard', requiresAdmin: true }
         },
         {
           path: 'product/upload',
           name: 'Upload',
           component: ProductUpload,
           props: true,
-          meta: { title: 'Product - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Product - Upload', requiresAdmin: true, }
         },
         {
           path: 'product/update',
           name: 'UpDate',
           component: ProductUpdate,
           props: true,
-          meta: { title: 'Product - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Product - Update', requiresAdmin: true, }
         },
         {
-          path: 'products/:id',
+          path: '/products/:id-:productName',
           name: 'ViewProduct',
           component: ViewProduct,
           props: true,
@@ -245,65 +245,65 @@ const router = createRouter({
           path: 'vouchers/upload',
           name: 'VouchersUpload',
           component: VouchersUpload,
-          meta: { title: 'Vouchers - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Vouchers - Upload', requiresAdmin: true, }
         },
         {
           path: 'vouchers/update',
           name: 'VouchersUpdate',
           component: VouchersUpdate,
-          meta: { title: 'Vouchers - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Vouchers - Update', requiresAdmin: true, }
         },
         {
           path: 'vouchers/edit/:id',
           name: 'EditVoucher',
           component: EditVoucher,
           props: true,
-          meta: { title: 'Vouchers - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Vouchers - Edit', requiresAdmin: true, }
         },
         {
           path: 'product/edit/:id',
           name: 'EditProduct',
           component: EditProduct,
           props: true,
-          meta: { title: 'Product - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Product - Edit', requiresAdmin: true, }
         },
         {
           path: 'section/upload',
           name: 'sectionUpload',
           component: sectionUpload,
-          meta: { title: 'Section - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Section - Upload', requiresAdmin: true, }
         },
         {
           path: 'section/update',
           name: 'sectionUpdate',
           component: sectionUpdate,
-          meta: { title: 'Section - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Section - Update', requiresAdmin: true, }
         },
         {
           path: 'section/edit/:id',
           name: 'EditSection',
           component: EditSection,
           props: true,
-          meta: { title: 'Section - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Section - Edit', requiresAdmin: true, }
         },
         {
           path: 'slider/upload',
           name: 'SliderUpload',
           component: SliderUpload,
-          meta: { title: 'Slider - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Slider - Upload', requiresAdmin: true, }
         },
         {
           path: 'slider/update',
           name: 'SliderUpdate',
           component: SliderUpdate,
-          meta: { title: 'Slider - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Slider - Update', requiresAdmin: true, }
         },
         {
           path: 'slider/edit/:id',
           name: 'EditSlider',
           component: EditSlider,
           props: true,
-          meta: { title: 'Slider - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Slider - Edit', requiresAdmin: true, }
         },
         {
           path: 'blog',
@@ -315,20 +315,20 @@ const router = createRouter({
           path: 'blog/upload',
           name: 'blogUpload',
           component: blogUpload,
-          meta: { title: 'Blog - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Blog - Upload', requiresAdmin: true, }
         },
         {
           path: 'blog/update',
           name: 'blogUpdate',
           component: blogUpdate,
-          meta: { title: 'BLog - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'BLog - Update', requiresAdmin: true, }
         },
         {
           path: 'blog/edit/:id',
           name: 'EditBlog',
           component: EditBlog,
           props: true,
-          meta: { title: 'BLog - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'BLog - Edit', requiresAdmin: true, }
         },
         {
           path: 'contact',
@@ -346,46 +346,46 @@ const router = createRouter({
           path: 'discount/update',
           name: 'DiscountUpdate',
           component: DiscountUpdate,
-          meta: { title: 'Discount - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Discount - Update', requiresAdmin: true, }
         },
         {
           path: 'discount/edit/:id',
           name: 'EditDiscount',
           component: EditDiscount,
           props: true,
-          meta: { title: 'Discount - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Discount - Edit', requiresAdmin: true, }
         },
         {
           path: 'customers',
           name: 'Customers',
           component: Customers,
-          meta: { title: 'Customers', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Customers', requiresAdmin: true, }
         },
         {
           path: 'orders',
           name: 'Orders',
           component: Orders,
-          meta: { title: 'Orders', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Orders', requiresAdmin: true, }
         },
         {
           path: 'order/details/:id',
           name: 'OrderDetails',
           component: OrderDetails,
           props: true,
-          meta: { title: 'Order Details', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Order Details', requiresAdmin: true, }
         },
         {
           path: 'account/users',
           name: 'Users',
           component: Users,
-          meta: { title: 'Users', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Users', requiresAdmin: true, }
         },
         {
           path: 'user/edit/:id',
           name: 'editUser',
           component: editUser,
           props: true,
-          meta: { title: 'User - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'User - Edit', requiresAdmin: true, }
         },
         {
           path: 'product/recently',
@@ -397,39 +397,39 @@ const router = createRouter({
           path: 'video/upload',
           name: 'videoUpload',
           component: videoUpload,
-          meta: { title: 'Videos - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Videos - Update', requiresAdmin: true, }
         },
         {
           path: 'video/update',
           name: 'videoUpdate',
           component: videoUpdate,
-          meta: { title: 'Vides - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Vides - Update', requiresAdmin: true, }
         },
         {
           path: 'video/edit/:id',
           name: 'editVideo',
           component: editVideo,
           props: true,
-          meta: { title: 'Video - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Video - Edit', requiresAdmin: true, }
         },
         {
           path: 'shop/upload',
           name: 'Shop',
           component: shopUpload,
-          meta: { title: 'Shop - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Shop - Upload', requiresAdmin: true, }
         },
         {
           path: 'shop/update',
           name: 'shopUpdate',
           component: shopUpdate,
-          meta: { title: 'Shop - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Shop - Update', requiresAdmin: true, }
         },
         {
           path: 'shop/edit/:id',
           name: 'editShop',
           component: editShop,
           props: true,
-          meta: { title: 'Shop - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Shop - Edit', requiresAdmin: true, }
         },
         {
           path: '/search',
@@ -442,39 +442,39 @@ const router = createRouter({
           path: 'sizechart/upload',
           name: 'sizechartUpload',
           component: sizeUpload,
-          meta: { title: 'Size chart - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Size chart - Upload', requiresAdmin: true, }
         },
         {
           path: 'sizechart/update',
           name: 'sizeUpdate',
           component: sizeUpdate,
-          meta: { title: 'Size chart - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Size chart - Update', requiresAdmin: true, }
         },
         {
           path: 'size/edit/:id',
           name: 'editSizeChart',
           component: editSizeChart,
           props: true,
-          meta: { title: 'Size chart - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Size chart - Edit', requiresAdmin: true, }
         },
         {
           path: 'slider/bag/upload',
           name: 'SliderBagUpload',
           component: sliderBagUpload,
-          meta: { title: 'Slider bag - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Slider bag - Upload', requiresAdmin: true, }
         },
         {
           path: 'slider/bag/update',
           name: 'sliderBagUpdate',
           component: sliderBagUpdate,
-          meta: { title: 'Slider bag - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Slider bag - Update', requiresAdmin: true, }
         },
         {
           path: 'siler/bag/edit/:id',
           name: 'EditSliderBag',
           component: EditSliderBag,
           props: true,
-          meta: { title: 'Slider bag - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Slider bag - Edit', requiresAdmin: true, }
         },
         {
           path: 'lookbook',
@@ -486,7 +486,7 @@ const router = createRouter({
           path: 'lookbook/upload',
           name: 'lookbookUpload',
           component: lookbookUpload,
-          meta: { title: 'Lookbooks - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Lookbooks - Upload', requiresAdmin: true, }
         },
         {
           path: 'lookbook/:id',
@@ -499,90 +499,88 @@ const router = createRouter({
           path: 'lookbook/update',
           name: 'lookbookUpdate',
           component: lookbookUpdate,
-          meta: { title: 'Lookbooks - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Lookbooks - Update', requiresAdmin: true, }
         },
         {
           path: 'lookbook/edit/:id',
           name: 'editLookbook',
           component: editLookbook,
           props: true,
-          meta: { title: 'Lookbook - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Lookbook - Edit', requiresAdmin: true, }
         },
         {
           path: 'about/upload',
           name: 'aboutUpload',
           component: aboutUpload,
-          meta: { title: 'About - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'About - Upload', requiresAdmin: true, }
         },
         {
           path: 'about/update',
           name: 'aboutUpdate',
           component: aboutUpdate,
-          meta: { title: 'About - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'About - Update', requiresAdmin: true, }
         },
         {
           path: 'about/edit/:id',
           name: 'editAbout',
           component: editAbout,
-          meta: { title: 'About - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'About - Edit', requiresAdmin: true, }
         },
         {
           path: 'shop/item',
           name: 'Item',
           component: Item,
-          meta: { title: 'Shop - items', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Shop - items', requiresAdmin: true, }
         },
         {
           path: 'contact/upload',
           name: 'contactUpload',
           component: contactUpload,
-          meta: { title: 'Contact - Upload', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Contact - Upload', requiresAdmin: true, }
         },
         {
           path: 'contact/update',
           name: 'contactUpdate',
           component: contactUpdate,
-          meta: { title: 'Contact - Update', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Contact - Update', requiresAdmin: true, }
         },
         {
           path: 'contact/edit/:id',
           name: 'contactEdit',
           component: contactEdit,
-          meta: { title: 'Contact - Edit', requiresAuth: true, requiresAdmin: true, }
+          meta: { title: 'Contact - Edit', requiresAdmin: true, }
         },
       ]
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: { name: 'Error', params: {} }
     }
   ],
 });
 
 
+router.beforeEach(async (to, from, next) => {
+  let title = to.meta.title;
 
-router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || 'Web title test';
+  if (to.name === 'ViewProduct') {
+    const productName = to.params.productName || 'Product';
+    const category = to.params.category || '';
+    title = `${productName} - ${'web.com'}`;
+  }
+  document.title = title;
   window.scrollTo(0, 0);
-  next();
-});
-
-router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
-  if (requiresAuth) {
-    axios.get('/api/check-auth')
-      .then(response => {
-        if (response.data.authenticated) {
-          if (requiresAdmin && response.data.role !== 'admin') {
-            next({ name: 'Home' });
-          } else {
-            next();
-          }
-        } else {
-          next({ name: 'Login' });
-        }
-      })
-      .catch((error) => {
-        console.error('An error occurred during authentication check:', error);
-        next({ name: 'Home' });
-      });
+  if (requiresAdmin) {
+    // await store.dispatch('fetchUser');
+    const isAdmin = store.getters.isAdmin;
+    const isAuthenticated = store.getters.isAuthenticated;
+    // console.log(isAuthenticated);
+    if (isAdmin && isAuthenticated) {
+      next();
+    } else {
+      next({ name: 'Home' });
+    }
   } else {
     next();
   }

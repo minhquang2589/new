@@ -11,8 +11,8 @@
                     &times;
                 </button>
             </div>
-            <div class=" p-4">
-                <div>
+            <div class="p-4">
+                <div class="price-input">
                     <label for="priceFrom" class="flex items-center gap-2">
                         <input
                             type="number"
@@ -53,6 +53,9 @@
                             <span class="text-sm mr-1 font-medium text-gray-700"
                                 >New</span
                             >
+                            <span class="text-sm mr-1 font-medium text-gray-700"
+                                >({{ newCount }})</span
+                            >
                         </div>
                     </label>
                 </li>
@@ -70,6 +73,9 @@
                         <div class="flex">
                             <span class="text-sm mr-1 font-medium text-gray-700"
                                 >Discount</span
+                            >
+                            <span class="text-sm mr-1 font-medium text-gray-700"
+                                >({{ discountCount }})</span
                             >
                         </div>
                     </label>
@@ -89,6 +95,9 @@
                             <span class="text-sm mr-1 font-medium text-gray-700"
                                 >In Stock</span
                             >
+                            <span class="text-sm mr-1 font-medium text-gray-700"
+                                >({{ inStockCount }})</span
+                            >
                         </div>
                     </label>
                 </li>
@@ -106,6 +115,9 @@
                         <div class="flex">
                             <span class="text-sm mr-1 font-medium text-gray-700"
                                 >Out of Stock</span
+                            >
+                            <span class="text-sm mr-1 font-medium text-gray-700"
+                                >({{ OutOfStockCount }})</span
                             >
                         </div>
                     </label>
@@ -131,6 +143,7 @@
 
 <script>
 import axios from "axios";
+import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
 
 export default {
     name: "FilterMobile",
@@ -144,9 +157,51 @@ export default {
             filterDiscount: false,
             filterinstock: false,
             filteroutofstock: false,
+            discountCount: 0,
+            newCount: 0,
+            inStockCount: 0,
+            OutOfStockCount: 0,
+            dataCate: null,
         };
     },
+    computed: {
+        filter: {
+            get() {
+                return this.$store.state.filter;
+            },
+            set(value) {
+                this.$store.commit("setFilter", value);
+            },
+        },
+        ...mapGetters(["getFilterData"]),
+    },
+    watch: {
+        getFilterData(newValue) {
+            this.dataCate = newValue;
+            this.fetchData();
+        },
+    },
     methods: {
+        async fetchData() {
+            if (this.dataCate || this.getFilterData) {
+                try {
+                    const response = await axios.get(
+                        `/api/filter/content/${
+                            this.dataCate ?? this.getFilterData
+                        }`
+                    );
+                    // console.log(response.data);
+                    if (response.data.success == true) {
+                        this.newCount = response.data.newCount;
+                        this.discountCount = response.data.discountCount;
+                        this.inStockCount = response.data.instockCount;
+                        this.OutOfStockCount = response.data.outstockCount;
+                    }
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                }
+            }
+        },
         closeFilter() {
             this.toggleFilter();
         },
@@ -160,7 +215,7 @@ export default {
                 instock: this.filterinstock,
                 outofstock: this.filteroutofstock,
             };
-            this.$emit("updateFilters", filters);
+            this.filter = filters;
         },
         resetFilters() {
             this.searchKey = null;
@@ -177,6 +232,9 @@ export default {
 </script>
 
 <style scoped>
+.price-input input{
+    padding-left: 12px;
+}
 @media only screen and (max-width: 768px) {
     .filter-button {
         display: block;

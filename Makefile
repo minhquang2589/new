@@ -12,3 +12,9 @@ up:
 migrate:
 	docker-compose exec app bash
 	php artisan migrate
+	# start job
+	php artisan queue:work
+	# close job
+	php artisan queue:forget job-id
+
+ 

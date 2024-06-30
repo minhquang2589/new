@@ -9,23 +9,108 @@
                         </button>
                     </div>
                     <div class="flex">
-                        <input
-                            class="border rounded-lg border-gray-500 mr-2"
-                            v-model="query"
-                            placeholder="Search for products..."
-                        />
-                        <button @click="executeSearch" class="mb-3">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
+                        <div class="input-container">
+                            <input
+                                class="border border-gray-400"
+                                v-model="query"
+                                @keyup.enter="executeSearch"
+                                @input="debouncedSearch()"
+                                placeholder="Search for products..."
+                            />
+                            <LoadingButton
+                                class="loading-button"
+                                :loading="isLoadingButton"
                             >
-                                <path
-                                    d="M23.809 21.646l-6.205-6.205c1.167-1.605 1.857-3.579 1.857-5.711 0-5.365-4.365-9.73-9.731-9.73-5.365 0-9.73 4.365-9.73 9.73 0 5.366 4.365 9.73 9.73 9.73 2.034 0 3.923-.627 5.487-1.698l6.238 6.238 2.354-2.354zm-20.955-11.916c0-3.792 3.085-6.877 6.877-6.877s6.877 3.085 6.877 6.877-3.085 6.877-6.877 6.877c-3.793 0-6.877-3.085-6.877-6.877z"
-                                />
-                            </svg>
-                        </button>
+                                <button
+                                    @click="executeSearch"
+                                    class="hidden"
+                                ></button>
+                            </LoadingButton>
+                        </div>
+                    </div>
+                    <div v-if="results.length && resultQuantity">
+                        <div
+                            class="relative w-full border overflow-hidden rounded-lg border-gray-300 px-4 py-8 sm:px-6 lg:px-8"
+                        >
+                            <div class="mt-1 space-y-3">
+                                <ul class="space-y-3 overflow-y-auto">
+                                    <li
+                                        class="flex rounded border hover:cursor-pointer hover:border-gray-800 items-center gap-4"
+                                        v-for="value in results"
+                                        :key="value.id"
+                                        @click="
+                                            viewProduct(value.id, value.name)
+                                        "
+                                    >
+                                        <img
+                                            :src="`/images/${value.image}`"
+                                            :alt="value.name"
+                                            class="size-16 rounded object-cover"
+                                        />
+                                        <div>
+                                            <h3
+                                                class="text-sm"
+                                                v-html="
+                                                    wrapQueryInBold(
+                                                        value.name,
+                                                        query
+                                                    )
+                                                "
+                                            ></h3>
+                                            <dl
+                                                class="mt-0.5 space-y-px text-[10px] text-gray-600"
+                                            >
+                                                <div class="flex">
+                                                    <div>
+                                                        <dt class="inline">
+                                                            Price:
+                                                        </dt>
+                                                        <dd class="inline">
+                                                            {{
+                                                                this.formatCurrency(
+                                                                    value.price
+                                                                )
+                                                            }}
+                                                        </dd>
+                                                    </div>
+                                                    <div
+                                                        class="ml-1"
+                                                        v-if="
+                                                            value.discount &&
+                                                            value.discount_quantity >
+                                                                0
+                                                        "
+                                                    >
+                                                        <dt class="inline">
+                                                            -
+                                                        </dt>
+                                                        <dd class="inline">
+                                                            {{
+                                                                value.discount
+                                                            }}%
+                                                        </dd>
+                                                    </div>
+                                                </div>
+                                            </dl>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <div class="space-y-1 text-center">
+                                    <span
+                                        @click="executeSearch"
+                                        class="block hover:cursor-pointer rounded border border-gray-400 hover:border-black py-2 text-sm text-gray-600 transition hover:ring-1 hover:ring-gray-400"
+                                    >
+                                        View all ({{ resultQuantity }})
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        v-if="checkResult && resultQuantity <= 0"
+                        class="flex justify-center text-sm"
+                    >
+                        No products were found matching your selection.
                     </div>
                 </div>
             </transition>
@@ -34,7 +119,11 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+import LoadingButton from "../layout/LoadingButton.vue";
+
 export default {
+    components: { LoadingButton },
     props: {
         show: {
             type: Boolean,
@@ -44,10 +133,59 @@ export default {
     data() {
         return {
             query: "",
+            results: [],
+            resultQuantity: 0,
+            checkResult: false,
+            debounceTimeout: null,
+            isLoadingButton: false,
         };
     },
+    computed: {
+        ...mapGetters(["formatCurrency"]),
+    },
     methods: {
+        wrapQueryInBold(text, query) {
+            const regex = new RegExp(`(${query})`, "gi");
+            return text.replace(regex, "<strong>$1</strong>");
+        },
+        async searchItems() {
+            this.checkResult = false;
+            if (this.query !== "") {
+                this.isLoadingButton = true;
+                try {
+                    const response = await axios.get(
+                        `/api/products/search-chill`,
+                        {
+                            params: { query: this.query },
+                        }
+                    );
+                    // console.log(response.data);
+                    if (response.data.success) {
+                        this.results = response.data.data;
+                        this.resultQuantity = response.data.resultQuantity;
+                        if (this.resultQuantity <= 0) {
+                            this.checkResult = true;
+                            this.isLoadingButton = false;
+                        }
+                        this.isLoadingButton = false;
+                    }
+                } catch (error) {
+                    this.results = [];
+                    this.isLoadingButton = false;
+                    // console.error("Error:", error);
+                }
+            } else {
+                this.results = [];
+            }
+        },
+        debouncedSearch() {
+            clearTimeout(this.debounceTimeout);
+            this.debounceTimeout = setTimeout(() => {
+                this.searchItems();
+            }, 600);
+        },
         executeSearch() {
+            this.checkResult = false;
             if (this.query !== "") {
                 this.$emit("close");
                 this.$router.push({
@@ -57,13 +195,41 @@ export default {
             }
         },
         closeSearch() {
+            this.checkResult = false;
+            this.query = "";
+            this.results = [];
             this.$emit("close");
+        },
+        viewProduct(id, name) {
+            this.$emit("close");
+            const productName = name.replace(/\s+/g, "-").toLowerCase();
+            this.$router.push({
+                name: "ViewProduct",
+                params: { id: id, productName: productName },
+            });
         },
     },
 };
 </script>
-
 <style scoped>
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-container input {
+    flex: 1;
+    font-size: 1rem;
+    border-radius: 7px;
+}
+
+.input-container .loading-button {
+    position: absolute;
+    right: 27px;
+    margin-bottom: 10px;
+}
 .overlay-search {
     position: fixed;
     top: 0;
@@ -89,6 +255,7 @@ export default {
 
 .search-container {
     width: 40%;
+    max-height: 80%;
     background-color: white;
     padding: 20px;
     border: 1px solid #ccc;
@@ -96,18 +263,25 @@ export default {
     z-index: 1001;
     transform: translateY(0);
     transition: transform 0.3s ease, opacity 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
 }
 
 .search-container input {
     padding: 5px;
+    padding-left: 15px;
+    padding-right: 50px;
     margin-bottom: 10px;
     width: 100%;
-    box-sizing: border-box;
+    font-family: sans-serif;
 }
 
 @media only screen and (max-width: 768px) {
     .search-container {
         width: 95%;
+    }
+    .search-container input {
+        padding-left: 10px;
     }
 }
 

@@ -57,12 +57,12 @@
                             </ul>
                         </div>
                         <div class="mt-6">
-                            <button
-                                type="submit"
+                            <LoadingButton
                                 class="bg-gray-700 text-gray-100 p-4 w-full rounded-full tracking-wide font-semibold font-display focus:outline-none focus:shadow-outline hover:bg-gray-800 shadow-lg"
+                                :loading="isLoadingButton"
                             >
-                                Log In
-                            </button>
+                                <button type="submit">Log In</button>
+                            </LoadingButton>
                         </div>
                     </form>
                     <div
@@ -102,19 +102,23 @@
 <script>
 import axios from "axios";
 import { mapGetters, mapMutations, mapActions } from "vuex";
+import LoadingButton from "../components/layout/LoadingButton.vue";
 
 export default {
     name: "Login",
+    components: { LoadingButton },
     data() {
         return {
             email: "",
             password: "",
             errorMessages: [],
+            isLoadingButton: false,
         };
     },
     methods: {
         ...mapActions(["fetchUser"]),
         login() {
+            this.isLoadingButton = true;
             this.errorMessages = [];
             axios
                 .post("/api/login", {
@@ -122,21 +126,26 @@ export default {
                     password: this.password,
                 })
                 .then((response) => {
+                    // console.log(response.data);
                     if (response.data.success) {
                         if (response.data.role === "admin") {
                             this.fetchUser();
+                            this.isLoadingButton = false;
                             this.$router.push({ name: "Dashboard" });
                         } else {
+                            this.isLoadingButton = false;
                             this.$router.push({ name: "Home" });
                         }
                     } else {
                         this.errorMessages = response.data.errors;
+                        this.isLoadingButton = false;
                     }
                 })
                 .catch((error) => {
                     this.errorMessages = [
                         "An error occurred while logging in.",
                     ];
+                    this.isLoadingButton = false;
                 });
         },
     },

@@ -5,7 +5,9 @@
         </div>
         <div v-show="isFilterOpen" class="overlay" @click="toggleFilter"></div>
         <div :class="{ 'view-cart-open': isFilterOpen }" class="view-cart">
-            <FilterMobile :toggleFilter="toggleFilter" />
+            <FilterMobile
+                :toggleFilter="toggleFilter"
+            />
         </div>
         <div
             v-show="isViewCartOpen"

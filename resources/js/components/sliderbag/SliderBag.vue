@@ -1,33 +1,30 @@
 <template>
-    <div
-        data-aos="fade-left"
-        data-aos-anchor="#example-anchor"
-        data-aos-offset="500"
-        data-aos-duration="500"
-    >
+    <div class="lg:px-10 px-2 bg-white">
         <div
-            class="shadow-xl rounded-md mb-10 mx-auto max-w-screen-xl"
-            v-if="dataSlider != null && dataSlider.length >= 2 && dataBag !=null"
+            class="shadow-xl mx-auto rounded-md mb-10 max-w-screen"
+            v-if="
+                dataSlider != null && dataSlider.length >= 2 && dataBag != null
+            "
         >
-            <div
-                class=" px-4 py-8 sm:px-6 sm:py-12 lg:px-6"
-            >
+            <div class="px-4 py-8 sm:px-6 sm:py-12 lg:px-6">
                 <div
                     class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch"
                 >
                     <div
-                        class="grid place-content-center rounded bg-gray-100 p-6 sm:p-8"
+                        class="grid place-content-center rounded bg-gray-50 p-6 sm:p-8"
                     >
                         <div class="mx-auto max-w-md text-center lg:text-left">
                             <div>
                                 <h2
                                     @click="navigateToUrl(dataBag.link_url)"
-                                    class="text-xl font-bold text-gray-900 sm:text-3xl"
+                                    class="text-xl uppercase font-bold text-gray-900 sm:text-3xl"
                                 >
                                     Bag
                                 </h2>
 
-                                <p class="mt-4 text-gray-500">
+                                <p
+                                    class="mt-4 text-xs font-medium uppercase text-gray-600"
+                                >
                                     {{ dataBag.description }}
                                 </p>
                             </div>
@@ -48,13 +45,13 @@
                                 <li>
                                     <a
                                         href="#"
-                                        @click="viewProduct(item.id)"
+                                        @click="viewProduct(item.id,item.name)"
                                         class="group block"
                                     >
                                         <img
                                             :src="`/images/${item.image}`"
                                             :alt="item.image"
-                                            class="aspect-square w-full rounded object-cover"
+                                            class="aspect-square w-full group-hover:scale-105 transition duration-500 rounded object-cover"
                                         />
 
                                         <div class="mt-3">
@@ -119,10 +116,11 @@ export default {
                 window.location.href = url;
             }
         },
-        viewProduct(productId) {
+        viewProduct(id, name) {
+            const productName = name.replace(/\s+/g, "-").toLowerCase();
             this.$router.push({
                 name: "ViewProduct",
-                params: { id: productId },
+                params: { id: id, productName: productName },
             });
         },
     },

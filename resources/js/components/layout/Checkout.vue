@@ -110,8 +110,8 @@
                         <div
                             class="flex mt-4 justify-end border-t border-gray-300"
                         ></div>
-                        <div v-if="cartCheckout != null" class="mt-1">
-                            <template v-for="(item, index) in cartCheckout">
+                        <div class="mt-1">
+                            <template v-for="(item, index) in cart">
                                 <div class="flex ml-4 mt-2 justify-between">
                                     <div>
                                         <div>
@@ -215,7 +215,7 @@
                                         <div>
                                             <label
                                                 for="vnpay"
-                                                class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-100 p-1 text-sm font-medium shadow-sm hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
+                                                class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-300 p-1 text-sm font-medium shadow-sm hover:border-gray-600 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
                                             >
                                                 <p class="text-gray-700">
                                                     Thanh Toán trực tuyến
@@ -233,7 +233,7 @@
                                         <div>
                                             <label
                                                 for="meet"
-                                                class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-100 p-1 text-sm font-medium shadow-sm hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
+                                                class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-gray-300 p-1 text-sm font-medium shadow-sm hover:border-gray-600 has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
                                             >
                                                 <p class="text-gray-600">
                                                     Thanh toán khi nhận hàng
@@ -292,11 +292,16 @@
             </form>
         </div>
     </div>
+    <LoadingSpinner :isLoading="isLoading" />
 </template>
 <script>
-import { mapGetters, mapMutations, mapActions } from "vuex";
+import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
+import LoadingSpinner from "./LoadingSpinner.vue";
 export default {
     name: "Checkout",
+    components: {
+        LoadingSpinner,
+    },
     data() {
         return {
             cartCheckout: [],
@@ -313,38 +318,38 @@ export default {
             address: "",
             note: "",
             payment: "",
+            isLoading: true,
         };
     },
-    computed: {
-        ...mapGetters(["userData"]),
-    },
     mounted() {
+        this.fetchCart();
+        this.fetchCartData();
+        this.fetchCartQuantity();
+        this.fetchUser();
         if (this.userData) {
             this.name = this.userData.name;
             this.email = this.userData.email;
             this.phone = this.userData.phone;
             this.address = this.userData.address;
+            this.isLoading = false;
+        }
+        if (this.cart && this.cartData) {
+            this.cartQuantity = this.cartData.cartQuantity;
+            this.isLoading = false;
+        } else {
+            this.$router.push({ name: "Error" });
         }
         axios
             .get("/api/checkout/view")
             .then((response) => {
                 // console.log(response.data);
-                if (
-                    response.data.success == false &&
-                    response.data.cart == false
-                ) {
-                    this.$router.push({ name: "Error" });
-                }
                 if (response.data.success == true) {
-                    this.cartCheckout = response.data.DETACheckout.cartCheckout;
                     if (response.data.DETACheckout.VoucherValue > 0) {
                         this.VoucherValue =
                             response.data.DETACheckout.VoucherValue;
                     } else {
                         this.VoucherValue = null;
                     }
-
-                    this.cartQuantity = response.data.DETACheckout.cartQuantity;
                     this.checkoutTotal =
                         response.data.DETACheckout.checkoutTotal;
                     this.checkoutSubtotal =
@@ -352,15 +357,31 @@ export default {
                     this.totalDiscountAmount =
                         response.data.DETACheckout.totalDiscountAmount;
                     this.Voucher = response.data.DETACheckout.voucherCode;
+                    this.isLoading = false;
                 } else {
-                    this.cartCheckout = null;
+                    this.$router.push({ name: "Error" });
                 }
             })
             .catch((error) => {
                 // console.error("Error:", error);
             });
     },
+    computed: {
+        ...mapGetters([
+            "cart",
+            "cartData",
+            "errorMessage",
+            "isVoucherValid",
+            "userData",
+        ]),
+    },
     methods: {
+        ...mapActions([
+            "fetchCart",
+            "fetchCartData",
+            "fetchCartQuantity",
+            "fetchUser",
+        ]),
         showNotification(message) {
             const notification = document.createElement("div");
             notification.classList.add("notificationAddcart");

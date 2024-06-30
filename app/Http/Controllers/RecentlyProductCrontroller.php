@@ -36,7 +36,6 @@ class RecentlyProductCrontroller extends Controller
                 Redis::ltrim($sessionId, 0, 120);
                 Redis::expire($sessionId, 15 * 24 * 60 * 60);
             }
-            $recentlyViewedProducts = Redis::lrange($sessionId, 0, 120);
             return response()->json([
                 'success' => true,
                 'message' => 'add to recently!',

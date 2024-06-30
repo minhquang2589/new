@@ -1,17 +1,15 @@
 <template>
-    <div
-        data-aos="fade-right"
-        data-aos-offset="300"
-        data-aos-easing="ease-in-sine"
-    >
-        <div class="lg:flex lg:justify-center w-full px-2 lg:px-10 lg:my-20 my-16">
+    <div v-if="section.name && section.image">
+        <div
+            class="lg:flex lg:justify-center w-full px-2 lg:px-10 lg:my-20 my-16"
+        >
             <div
                 class="overflow-hidden rounded-lg shadow-2xl md:grid md:grid-cols-3"
             >
                 <img
                     @click="navigateToUrl(section.link_url)"
                     :src="`/images/${section.image}`"
-                    class=" w-full object-cover md:h-full hover:cursor-pointer transition hover:scale-105"
+                    class="w-full object-cover duration-500 md:h-full hover:cursor-pointer transition hover:scale-105"
                 />
                 <div
                     class="flex justify-center items-center w-full md:col-span-2"
@@ -25,7 +23,7 @@
                             </span>
 
                             <p
-                                class="mt-8 text-xs font-medium uppercase text-gray-400"
+                                class="mt-8 text-xs font-medium uppercase text-gray-600"
                             >
                                 {{ section.description }}
                             </p>
@@ -57,7 +55,9 @@ export default {
         axios
             .get("/api/section")
             .then((response) => {
-                this.section = response.data.section;
+                if (response.data.success == true) {
+                    this.section = response.data.section;
+                }
             })
             .catch((error) => {
                 console.error("Error fetching section data:", error);

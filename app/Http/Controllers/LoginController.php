@@ -9,6 +9,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Redis;
+
 
 
 
@@ -76,6 +78,8 @@ class LoginController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
+        Redis::flushall();
+        Session::flush();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return response()->json([

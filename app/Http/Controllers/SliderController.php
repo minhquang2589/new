@@ -196,4 +196,34 @@ class SliderController extends Controller
             ]);
         }
     }
+    ///
+    public function getSliderForyou()
+    {
+        $data = Product::select(
+            'products.id',
+            'products.name',
+            'products.price',
+            'products.is_new',
+            'discounts.quantity as discount_quantity',
+            'discounts.discount',
+            DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+        )
+            ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
+            ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
+            ->groupBy(
+                'products.id',
+                'products.name',
+                'products.price',
+                'products.is_new',
+                'discounts.quantity',
+                'discounts.discount',
+            )
+            ->inRandomOrder()
+            ->take(10)
+            ->get();
+        return response()->json([
+            'success' => true,
+            'data' =>  $data,
+        ]);
+    }
 }

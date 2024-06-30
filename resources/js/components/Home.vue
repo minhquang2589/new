@@ -1,4 +1,5 @@
 <template>
+    <Foryou />
     <Section />
     <SliderBag />
     <SliderSale v-if="$route.meta.showSliderSale" />
@@ -13,6 +14,7 @@ import Shop from "../components/shop/Shop.vue";
 import SliderSale from "@/components/slider/SliderSale.vue";
 import SliderBag from "../components/sliderbag/SliderBag.vue";
 import Section from "@/components/section/Section.vue";
+import Foryou from "./slider/Foryou.vue";
 
 export default {
     name: "Home",
@@ -23,6 +25,7 @@ export default {
         SliderSale,
         SliderBag,
         Section,
+        Foryou,
     },
 };
 </script>

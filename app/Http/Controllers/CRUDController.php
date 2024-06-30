@@ -8,7 +8,6 @@ use App\Models\ProductVariant;
 use App\Models\size;
 use App\Models\color;
 use App\Models\ProductCates;
-use App\Models\ProductDetails;
 use App\Models\Discounts;
 use App\Models\Images;
 use App\Models\product_variants;
@@ -60,7 +59,6 @@ class CRUDController extends Controller
             ->first();
 
         $productCate = ProductCates::where('id', $product->cate_id)->first();
-        $ProductDetails = ProductDetails::where('product_id', $product->id)->get();
 
         return response()->json([
             'success' => true,
@@ -72,7 +70,6 @@ class CRUDController extends Controller
             'colors' => $colors,
             'quantities' => $quantities,
             'productCate' => $productCate,
-            'ProductDetails' => $ProductDetails
         ]);
     }
     //////////////////////////// update ////////////////////////////////////////////
@@ -109,17 +106,8 @@ class CRUDController extends Controller
             $product->is_new = $request->is_new;
             $product->save();
 
-            $ProductDetails = ProductDetails::where('product_id', $product->id);
 
-            if ($ProductDetails->exists() && $request->details != null) {
-                $ProductDetails->delete();
-                foreach ($request->details as $detail) {
-                    $productDetails = new ProductDetails();
-                    $productDetails->product_id = $product->id;
-                    $productDetails->description = $detail;
-                    $productDetails->save();
-                }
-            }
+           
 
             $productCate = ProductCates::where('id', $product->cate_id)->first();
             $productCate->gender = $request->input('gender');
@@ -191,9 +179,6 @@ class CRUDController extends Controller
                     }
                 }
             }
-
-
-
             DB::commit();
             return response()->json([
                 'success' => true,

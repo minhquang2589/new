@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Session;
 use App\Models\Size;
 use App\Models\Color;
 use App\Models\ProductCates;
-use App\Models\ProductDetails;
 use App\Models\Images;
 use Illuminate\Database\QueryException;
 
@@ -22,7 +21,13 @@ class ProductController extends Controller
    //
    public function handleSearch(Request $request)
    {
+      $page = $request->input('page', 1);
+      $perPage = 30;
       $query = $request->input('query');
+
+      $totalResults = Product::where('name', 'like', "%{$query}%")
+         ->count();
+
       $products = Product::select(
          'products.id',
          'products.name',
@@ -36,7 +41,6 @@ class ProductController extends Controller
          'discounts.remaining',
          'discounts.id as discount_id',
          DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
-
       )
          ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
          ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
@@ -50,18 +54,69 @@ class ProductController extends Controller
             'discounts.quantity',
             'discounts.remaining',
             'discounts.discount',
-            'discounts.id',
+            'discounts.id'
          )
-         ->where('name', 'like', "%{$query}%")
-         ->orWhere('description', 'like', "%{$query}%")
+         ->orderBy('products.sales_count', 'desc')
+         ->where('products.name', 'like', "%{$query}%")
+         ->skip(($page - 1) * $perPage)
+         ->take($perPage + 1)
          ->get();
 
+      $hasMore = $products->count() > $perPage;
+      if ($hasMore) {
+         $products->pop();
+      }
       return response()->json([
          'success' => true,
          'products' => $products,
-         'resultQuantity' => count($products),
+         'hasMore' => $hasMore,
+         'resultQuantity' => $totalResults,
       ]);
    }
+   ///
+
+   public function handleSearchChill(Request $request)
+   {
+      $query = $request->input('query');
+
+      $totalResults = Product::where('name', 'like', "%{$query}%")
+         ->count();
+
+      $data = Product::select(
+         'products.id',
+         'products.name',
+         'products.price',
+         'products.sales_count',
+         DB::raw('SUM(product_variants.quantity) as total_quantity'),
+         'discounts.quantity as discount_quantity',
+         'discounts.discount',
+         'discounts.remaining',
+         'discounts.id as discount_id',
+         DB::raw('(SELECT image FROM images WHERE product_id = products.id ORDER BY id LIMIT 1) as image')
+      )
+         ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
+         ->leftJoin('discounts', 'product_variants.discount_id', '=', 'discounts.id')
+         ->groupBy(
+            'products.id',
+            'products.name',
+            'products.price',
+            'discounts.quantity',
+            'discounts.remaining',
+            'discounts.discount',
+            'discounts.id',
+            'products.sales_count',
+         )
+         ->where('products.name', 'like', "%{$query}%")
+         ->orderBy('products.sales_count', 'desc')
+         ->limit(5)
+         ->get();
+      return response()->json([
+         'success' => true,
+         'data' => $data,
+         'resultQuantity' => $totalResults,
+      ]);
+   }
+
    public function view($id)
    {
 
@@ -119,12 +174,10 @@ class ProductController extends Controller
          )
          ->where('products.id', '=', $id)
          ->first();
-      $productDetails = ProductDetails::where('product_id', $product->id)->get();
 
       return response()->json([
          'success' => true,
          'product_info' => $product_info,
-         'productDetails' => $productDetails,
          'ProductDetailImg' => $ProductDetailImg,
          'product' => $product,
          'productVariant' => $productVariants,
@@ -222,7 +275,7 @@ class ProductController extends Controller
          'page' => $page,
       ]);
    }
-   // //////////////////////////////////////////////////////////////////////////
+   /////////
    public function checkStock(Request $request)
    {
       $productId = $request->input('product_id');

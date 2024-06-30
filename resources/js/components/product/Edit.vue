@@ -29,6 +29,14 @@
                     >
                         Change
                     </button>
+                    <button
+                        v-if="productImage.length"
+                        type="button"
+                        @click="deleteImage"
+                        class="underline ml-2 mt-4 hover:text-blue-600"
+                    >
+                        Delete
+                    </button>
                     <input
                         ref="fileInput"
                         @change="handleImageUpload"
@@ -40,159 +48,64 @@
                     />
                 </div>
             </div>
-            <div class="relative z-0 mb-5 mt-4 group">
+            <div class="relative z-0 mb-2 mt-4 group">
                 <input
                     type="text"
                     name="product_name"
                     id="product_name"
                     v-model="product_name"
-                    placeholder="Product name"
                     class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                    placeholder="Product name"
                 />
                 <input
                     require
                     type="text"
-                    name="price"
-                    id="price"
-                    v-model="price"
-                    placeholder="Price"
                     @blur="formatPrice"
                     @input="formatPrice"
+                    v-model="price"
+                    placeholder="Price"
                     class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
                 />
-            </div>
-
-            <div class="mt-4">
-                <div class="w-full mr-5">
-                    <select
-                        id="gender"
-                        for="gender"
-                        name="gender"
-                        v-model="gender"
-                        class="block w-full px-3 sm:px-3 lg:px-5 pt-2 pb-1 text-sm text-grey-darker border border-grey-lighter rounded focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    >
-                        <option hidden selected disabled>
-                            Choose a gender
-                        </option>
-                        <option for="gender" value="Men">Men</option>
-                        <option for="gender" value="Women">Women</option>
-                        <option for="gender" value="Unisex">Unisex</option>
-                    </select>
-                    <select
-                        id="class"
-                        for="class"
-                        name="class"
-                        v-model="class"
-                        class="block w-full mt-2 px-3 sm:px-3 lg:px-5 pt-2 pb-1 text-sm text-grey-darker border border-grey-lighter rounded focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    >
-                        <option hidden selected disabled>Choose a class</option>
-                        <option for="class" value="clothes">clothes</option>
-                        <option for="class" value="bag">bag</option>
-                        <option for="class" value="hat">hat</option>
-                        <option for="class" value="shoe">shoe</option>
-                        <option for="class" value="accessory">accessory</option>
-                    </select>
-                </div>
-            </div>
-            <div class="mt-2">
-                <label for="start_datetime" class="text-sm"
-                    >Start discount:</label
+                <label
+                    for="gender"
+                    class="block text-xs font-medium text-gray-700"
                 >
-                <input
-                    type="datetime-local"
-                    class="text-sm"
-                    v-model="start_datetime"
-                    id="start_datetime"
-                    name="start_datetime"
-                />
-                <br />
-                <label for="end_datetime" class="text-sm">End discount:</label>
-                <input
-                    type="datetime-local"
-                    id="end_datetime"
-                    class="text-sm"
-                    name="end_datetime"
-                    v-model="end_datetime"
-                />
-                <br />
-                <div class="grid gap-1 mt-3 grid-cols-2">
-                    <div>
-                        <label
-                            for="color"
-                            class="block text-xs font-medium text-gray-700"
-                        >
-                            Discount
-                        </label>
-                        <input
-                            type="number"
-                            v-model="discountnumber"
-                            name="discountnumber"
-                            placeholder="Discount %"
-                            min="1"
-                            max="100"
-                            oninput="validity.valid||(value='');"
-                            class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
-                        />
-                    </div>
-                    <div>
-                        <label
-                            for="color"
-                            class="block text-xs font-medium text-gray-700"
-                        >
-                            Quantity
-                        </label>
-                        <input
-                            type="number"
-                            name="discountquantity"
-                            placeholder="Discount Quantity"
-                            min="0"
-                            v-model="discountquantity"
-                            oninput="validity.valid||(value='');"
-                            class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
-                        />
-                    </div>
-                </div>
-                <div class="relative z-0 mb-5 group">
-                    <label
-                        for="color"
-                        class="block text-xs font-medium text-gray-700"
-                    >
-                        Discount Remaining
-                    </label>
-                    <input
-                        type="number"
-                        name="discountremaining"
-                        placeholder="Discount remaining"
-                        min="0"
-                        v-model="discountremaining"
-                        oninput="validity.valid||(value='');"
-                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
-                    />
-                </div>
+                    Gender
+                </label>
+                <select
+                    id="gender"
+                    for="gender"
+                    name="gender"
+                    v-model="gender"
+                    class="block w-full mb-2 px-2 sm:px-3 lg:px-2 pt-2 pb-1 text-sm text-grey-darker border border-grey-lighter rounded focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                    <option hidden selected disabled>Choose a gender</option>
+                    <option for="gender" value="Men">Men</option>
+                    <option for="gender" value="Women">Women</option>
+                    <option for="gender" value="Unisex">Unisex</option>
+                </select>
+                <label
+                    for="Class"
+                    class="block text-xs font-medium text-gray-700"
+                >
+                    Class
+                </label>
+                <select
+                    id="class"
+                    for="class"
+                    name="class"
+                    v-model="class"
+                    class="block w-full mb-2 px-2 lg:px-2 pt-2 pb-1 text-sm text-grey-darker border border-grey-lighter rounded focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                    <option hidden selected disabled>Choose a class</option>
+                    <option for="class" value="clothes">clothes</option>
+                    <option for="class" value="bag">bag</option>
+                    <option for="class" value="hat">hat</option>
+                    <option for="class" value="shoe">shoe</option>
+                    <option for="class" value="accessory">accessory</option>
+                </select>
             </div>
-
-            <div
-                class="relative z-0 w-full mb-2 mt-3 group"
-                v-for="(detail, index) in details"
-                :key="index"
-            >
-                <input
-                    type="text"
-                    :name="'detail' + index"
-                    :id="'detail' + index"
-                    v-model="details[index]"
-                    placeholder="Details"
-                    class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
-                />
-            </div>
-            <button
-                class="underline hover:text-blue-600"
-                type="button"
-                @click="addDetailInput"
-            >
-                Add Detail
-            </button>
-            <div class="colorInputs mt-3" id="colorInputs">
+            <div class="colorInputs mb-2" id="colorInputs">
                 <div v-for="(color, colorIndex) in colors" :key="colorIndex">
                     <div>
                         <label
@@ -250,12 +163,89 @@
                 </div>
             </div>
             <button
-                class="underline hover:text-blue-600"
+                class="underline mb-2 hover:text-blue-600"
                 type="button"
                 @click="addColorInput"
             >
-                Add Color
+                Add color
             </button>
+            <div class="grid gap-1 grid-cols-2">
+                <div>
+                    <label
+                        for="color"
+                        class="block text-xs font-medium text-gray-700"
+                    >
+                        Discount
+                    </label>
+                    <input
+                        type="number"
+                        v-model="discountnumber"
+                        name="discountnumber"
+                        placeholder="Discount %"
+                        min="1"
+                        max="100"
+                        oninput="validity.valid||(value='');"
+                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="color"
+                        class="block text-xs font-medium text-gray-700"
+                    >
+                        Quantity
+                    </label>
+                    <input
+                        type="number"
+                        name="discountquantity"
+                        placeholder="Discount Quantity"
+                        min="0"
+                        v-model="discountquantity"
+                        oninput="validity.valid||(value='');"
+                        class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-1.5 px-4 mb-2"
+                    />
+                </div>
+            </div>
+            <label for="start_datetime" class="text-sm">Start discount:</label>
+            <input
+                type="datetime-local"
+                class="text-sm"
+                v-model="start_datetime"
+                id="start_datetime"
+                name="start_datetime"
+            />
+            <br />
+            <label for="end_datetime" class="text-sm">End discount:</label>
+            <input
+                type="datetime-local"
+                id="end_datetime"
+                class="text-sm"
+                name="end_datetime"
+                v-model="end_datetime"
+            />
+
+            <!-- <div
+                class="relative z-0 w-full mb-2 mt-3 group"
+                v-for="(detail, index) in details"
+                :key="index"
+            >
+                <input
+                    type="text"
+                    :name="'detail' + index"
+                    :id="'detail' + index"
+                    v-model="details[index]"
+                    placeholder="Details"
+                    class="text-sm border border-gray-300 appearance-none block w-full bg-grey-lighter text-grey-darker rounded py-2 px-4 mb-2"
+                />
+            </div>
+            <button
+                class="underline hover:text-blue-600"
+                type="button"
+                @click="addDetailInput"
+            >
+                Add Detail
+            </button> -->
+
             <div class="mt-3">
                 <textarea
                     class="w-full"
@@ -273,7 +263,7 @@
                         v-model="is_new"
                         :checked="is_new === 1"
                     />
-                    <span class="text-red-600 ml-3"><strong>New</strong></span>
+                    <span class="ml-3"><strong>New</strong></span>
                 </label>
             </div>
             <div
@@ -294,11 +284,12 @@
 
             <div class="mb-5 mt-2 w-full">
                 <div class="flex py-3 justify-start lg:flex lg:justify-start">
-                    <button
+                    <LoadingButton
                         class="block mr-2 rounded-xl bg-gray-800 px-8 py-2 text-sm text-white transition hover:bg-black"
+                        :loading="isLoadingButton"
                     >
-                        Submit
-                    </button>
+                        <button>Submit</button>
+                    </LoadingButton>
                 </div>
             </div>
         </form>
@@ -310,6 +301,7 @@ import { mapGetters, mapMutations, mapActions } from "vuex";
 import Dashboard from "@/components/Dashboard.vue";
 import LoadingSpinner from "../layout/LoadingSpinner.vue";
 import Swal from "sweetalert2";
+import LoadingButton from "../layout/LoadingButton.vue";
 
 export default {
     name: "EditProduct",
@@ -317,17 +309,13 @@ export default {
     components: {
         Dashboard,
         LoadingSpinner,
+        LoadingButton,
     },
     data() {
         return {
             errorMessages: [],
             colorCounter: 0,
-            colors: [
-                {
-                    name: "",
-                    sizes: [{ name: "", quantity: null }],
-                },
-            ],
+            colors: [],
             product_name: "",
             price: "",
             details: [],
@@ -346,6 +334,7 @@ export default {
             blogs: "",
             productImage: [],
             isLoading: true,
+            isLoadingButton: false,
         };
     },
     mounted() {
@@ -377,6 +366,9 @@ export default {
         ...mapGetters(["notification", "formatCurrencyInput"]),
     },
     methods: {
+        deleteImage() {
+            this.productImage = [];
+        },
         ...mapActions(["showNotification"]),
         triggerFileInput() {
             this.$refs.fileInput.click();
@@ -457,9 +449,6 @@ export default {
                             response.data.discountInfo.remaining;
                     }
                     this.description = response.data.product.description;
-                    this.details = response.data.ProductDetails.map(
-                        (detail) => detail.description || ""
-                    );
                     if (this.editorInstance) {
                         this.editorInstance.setData(this.description);
                     }
@@ -494,6 +483,8 @@ export default {
             }
         },
         productEdit() {
+            this.isLoadingButton = true;
+
             const productId = this.$route.params.id;
             const priceWithoutCurrency = this.price.replace(/[^\d]/g, "");
             const numericPrice = parseFloat(priceWithoutCurrency);
@@ -511,9 +502,9 @@ export default {
             let formData = new FormData();
             formData.append("product_name", this.product_name);
             formData.append("price", numericPrice);
-            for (let i = 0; i < this.details.length; i++) {
-                formData.append("details[]", this.details[i]);
-            }
+            // for (let i = 0; i < this.details.length; i++) {
+            //     formData.append("details[]", this.details[i]);
+            // }
             formData.append("is_new", this.is_new ? 1 : 0);
             formData.append("description", this.description);
             formData.append("gender", this.gender);
@@ -534,15 +525,18 @@ export default {
                     },
                 })
                 .then((response) => {
-                    // console.log(response.data);
+                    console.log(response.data);
                     if (response.data.success == true) {
                         this.showNotification(response.data.message);
                         this.getProductData();
+                        this.isLoadingButton = false;
                     } else {
+                        this.isLoadingButton = false;
                         this.errorMessages = response.data.error;
                     }
                 })
                 .catch((error) => {
+                    this.isLoadingButton = false;
                     console.error(error);
                 });
         },

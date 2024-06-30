@@ -2,8 +2,6 @@
     <div id="main_content">
         <Header v-if="!$route.meta.hideHeader" />
         <Shop v-if="$route.meta.showShop" />
-        <!-- <discountSection v-if="$route.meta.showDiscountSection" /> -->
-        <!-- <Section v-if="$route.meta.showSection" /> -->
         <Slider v-if="$route.meta.showSlider" />
         <main>
             <router-view />

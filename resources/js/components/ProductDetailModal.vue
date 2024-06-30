@@ -91,21 +91,18 @@
                                     </div>
                                 </li>
                                 <li
-                                    v-if="
-                                        ProductDetails &&
-                                        ProductDetails.length > 0
-                                    "
-                                    v-for="detail in ProductDetails"
+                                    v-if="product.description"
+                                    v-html="product.description"
                                     class="text-xs"
-                                >
-                                    - {{ detail.description }}
-                                </li>
+                                ></li>
                                 <li
                                     class="text-xs flex justify-center mt-5 mb-2 lg:my-8 hover:cursor-pointer"
-                                    @click="viewProduct(product.id)"
+                                    @click="
+                                        viewProduct(product.id, product.name)
+                                    "
                                 >
                                     <p
-                                        class="inline-block rounded-xl border-gray-500 text-gray-700 hover:border-red-500 border border-current px-3 py-1 lg:px-5 lg:py-1.5 text-sm font-medium transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring"
+                                        class="inline-block rounded-xl border-gray-500 text-gray-700 border border-current px-3 py-1 lg:px-5 lg:py-1.5 text-sm font-medium transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring"
                                     >
                                         View Product
                                     </p>
@@ -118,7 +115,7 @@
                     <div class="productdetail">
                         <div class="pcViewCart">
                             <div
-                                @click="viewProduct(product.id)"
+                                @click="viewProduct(product.id, product.name)"
                                 v-for="ProductDetailImg in ProductDetailImg"
                                 :key="ProductDetailImg.id"
                                 class="mb-2"
@@ -135,7 +132,9 @@
                         <div class="swiper mySwiperDetail mobileViewCart">
                             <div class="swiper-wrapper">
                                 <div
-                                    @click="viewProduct(product.id)"
+                                    @click="
+                                        viewProduct(product.id, product.name)
+                                    "
                                     v-for="ProductDetailImg in ProductDetailImg"
                                     :key="ProductDetailImg.id"
                                     class="swiper-slide"
@@ -192,15 +191,19 @@ export default {
             productVariant: [],
             productInfor: [],
             ProductDetail: [],
-            ProductDetails: [],
         };
     },
     computed: {
-        productUrl() {
-            return `/api/product/view/${this.productId}`;
-        },
         ...mapGetters(["formatCurrency"]),
     },
+    watch: {
+        show(newVal) {
+            if (newVal) {
+                this.fetchProductDetails();
+            }
+        },
+    },
+    emits: ["close"],
     methods: {
         closeModal() {
             this.isLoading = false;
@@ -209,13 +212,13 @@ export default {
         async fetchProductDetails() {
             this.isLoading = true;
             try {
-                const response = await axios.get(this.productUrl);
-                // console.log(response.data);
+                const response = await axios.get(
+                    `/api/product/view/${this.productId}`
+                );
+                console.log(response.data);
                 if (response.data.success == true) {
-                    this.isLoading = false;
                     this.ProductDetailImg = response.data.ProductDetailImg;
                     this.ProductDetail = response.data.product_info;
-                    this.ProductDetails = response.data.productDetails;
                     this.product = response.data.product;
                     this.sizes = response.data.sizes;
                     this.colors = response.data.colors;
@@ -224,17 +227,19 @@ export default {
                     this.$nextTick(() => {
                         this.includeSwiper();
                     });
+                    this.isLoading = false;
                 }
             } catch (error) {
                 this.isLoading = false;
                 console.error("Error:", error);
             }
         },
-        viewProduct(id) {
+        viewProduct(id, name) {
             this.$emit("close");
+            const productName = name.replace(/\s+/g, "-").toLowerCase();
             this.$router.push({
                 name: "ViewProduct",
-                params: { id: id },
+                params: { id: id, productName: productName },
             });
         },
         includeSwiper() {
@@ -254,14 +259,6 @@ export default {
             });
         },
     },
-    watch: {
-        show(newVal) {
-            if (newVal) {
-                this.fetchProductDetails();
-            }
-        },
-    },
-    emits: ["close"],
 };
 </script>
 

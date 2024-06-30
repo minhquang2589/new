@@ -25,7 +25,7 @@
                         <div
                             class="group rounded-xl relative block overflow-hidden"
                         >
-                            <div @click="viewProduct(product.id)">
+                            <div @click="viewProduct(product.id, product.name)">
                                 <img
                                     :src="`/images/${product.image1}`"
                                     :alt="product.name"
@@ -63,17 +63,22 @@
                                         class="text-xs my-2 hover:cursor-pointer"
                                     >
                                         <button
-                                            class="inline-block hover:border-red-500 mr-2 rounded-xl border border-gray-400 text-gray-700 lg:px-3 px-2 py-1 text-sm font-medium transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring"
+                                            class="inline-block mr-2 rounded-xl border border-gray-400 text-gray-700 lg:px-3 px-2 py-1 text-sm font-medium transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring"
                                         >
                                             Detail
                                         </button>
                                     </div>
                                     <div
                                         class="text-xs my-2 hover:cursor-pointer"
-                                        @click="viewProduct(product.id)"
+                                        @click="
+                                            viewProduct(
+                                                product.id,
+                                                product.name
+                                            )
+                                        "
                                     >
                                         <p
-                                            class="inline-block rounded-xl hover:border-red-500 border border-gray-400 text-gray-700 lg:px-3.5 px-2.5 py-1 text-sm font-medium transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring"
+                                            class="inline-block rounded-xl border border-gray-400 text-gray-700 lg:px-3.5 px-2.5 py-1 text-sm font-medium transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring"
                                         >
                                             View
                                         </p>
@@ -123,6 +128,8 @@ import Filter from "@/components/layout/Filter.vue";
 import FilterMobile from "@/components/layout/FilterMobile.vue";
 import ProductDetailModal from "../ProductDetailModal.vue";
 import scrollMixin from "../../store/modules/scrollMixin.js";
+import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
+import store from "../../store";
 
 export default {
     name: "Products",
@@ -132,13 +139,13 @@ export default {
         FilterMobile,
         ProductDetailModal,
     },
+    props: ["filter"],
     data() {
         return {
             category: "clothes",
             products: [],
             displayedProducts: [],
             page: 1,
-            perPage: 36,
             hasMore: true,
             filters: {},
             showModal: false,
@@ -147,17 +154,28 @@ export default {
         };
     },
     mounted() {
+        this.$store.commit("setFilterData", this.category);
         this.fetchData();
         window.addEventListener("scroll", this.handleScroll);
     },
     beforeDestroy() {
         window.removeEventListener("scroll", this.handleScroll);
     },
+    computed: {
+        ...mapGetters(["getFilter"]),
+    },
+    watch: {
+        getFilter(newFilterValue) {
+            this.filters = newFilterValue;
+            this.applyFilters();
+        },
+    },
     methods: {
-        viewProduct(productId) {
+        viewProduct(id, name) {
+            const productName = name.replace(/\s+/g, "-").toLowerCase();
             this.$router.push({
                 name: "ViewProduct",
-                params: { id: productId },
+                params: { id: id, productName: productName },
             });
         },
         openModal(productId) {
@@ -173,13 +191,14 @@ export default {
                 const response = await axios.get(
                     `/api/products/home?page=${this.page}`
                 );
-
-                const newProducts = response.data.productViews;
-                if (newProducts.length < this.perPage) {
-                    this.hasMore = false;
+                // console.log(response.data);
+                if (response.data.success == true) {
+                    this.hasMore = response.data.hasMore;
+                    this.products = this.products.concat(
+                        response.data.productViews
+                    );
+                    this.applyFilters();
                 }
-                this.products = this.products.concat(newProducts);
-                this.applyFilters();
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -247,10 +266,6 @@ export default {
             }
 
             this.displayedProducts = filteredProducts;
-            if (this.userTriggeredFilter) {
-                this.scrollToProductList();
-                this.userTriggeredFilter = false;
-            }
         },
         formatCurrency(value) {
             return new Intl.NumberFormat("vi-VN", {

@@ -1,5 +1,4 @@
 <template>
-    <LoadingSpinner :isLoading="isLoading" />
     <div class="modal-addcart">
         <div class="modal-content-addcart">
             <p class="text-black text-center text-sm">
@@ -42,7 +41,7 @@
     </div>
     <div class="grid mt-3 grid-cols-1 lg:grid-cols-4">
         <div class="standing-viewcart ml-1 px-5 content-center">
-            <div v-if="ProductDetails">
+            <div>
                 <div class="flex justify-start lg:px-8 pt-3">
                     <strong class="text-gray-900 text-sm italic"
                         >Product Details</strong
@@ -50,9 +49,7 @@
                 </div>
                 <div class="lg:px-8 mb-5">
                     <ul class="my-3 ml-3 lg:mt-6 lg:ml-5">
-                        <li v-for="detail in ProductDetails" class="text-xs">
-                            - {{ detail.description }}
-                        </li>
+                        <li v-html="product.description" class="text-xs"></li>
                     </ul>
                     <div class="text-[12px]">Name: {{ product.name }}</div>
                     <div
@@ -273,11 +270,15 @@
                                 </span>
 
                                 <div>
-                                    <button
-                                        class="text-sm font-medium transition-all group-hover:me-4"
+                                    <LoadingButton
+                                        class="transition-all hover:cursor-pointer group-hover:me-4"
+                                        :loading="isLoadingButton"
+                                        @click="addToCart()"
                                     >
-                                        Add to Cart
-                                    </button>
+                                        <span class="text-sm font-medium"
+                                            >Add to Cart</span
+                                        >
+                                    </LoadingButton>
                                 </div>
                             </div>
                         </div>
@@ -304,13 +305,15 @@
                                     </svg>
                                 </span>
                                 <div>
-                                    <button
+                                    <LoadingButton
+                                        class="transition-all hover:cursor-pointer group-hover:me-4"
+                                        :loading="isLoadingButton"
                                         @click="buyNow()"
-                                        class="text-sm font-medium transition-all group-hover:me-4"
-                                        type="button"
                                     >
-                                        Buy now
-                                    </button>
+                                        <span class="text-sm font-medium">
+                                            Buy now
+                                        </span>
+                                    </LoadingButton>
                                 </div>
                             </div>
                         </div>
@@ -319,24 +322,13 @@
             </div>
         </div>
     </div>
-    <div v-if="product.description != null" class="lg:px-4 px-3">
-        <div class="text-center mt-10 lg:mt-0">
-            <h1 class="text-xl font-bold mt-4 text-gray-900 sm:text-3xl">
-                Detail product
-            </h1>
-        </div>
-        <span class="flex pt-2 pb-5 items-center">
-            <span class="h-px flex-1 bg-slate-300"></span>
-        </span>
-        <div v-html="product.description"></div>
-    </div>
-
     <RelatedProduct />
     <sizeChart
         :showModalSize="showModalSizeChart"
         @closeModalSize="closeModalSize"
         :categoryProp="cateName"
     />
+    <LoadingSpinner :isLoading="isLoading" />
 </template>
 
 <script>
@@ -346,13 +338,15 @@ import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
 import { useRoute } from "vue-router";
 import axios from "axios";
 import LoadingSpinner from "../layout/LoadingSpinner.vue";
+import LoadingButton from "../layout/LoadingButton.vue";
 import sizeChart from "../modal/SizeChart.vue";
 export default {
-    props: ["id"],
+    props: ["id", "productName"],
     components: {
         RelatedProduct,
         LoadingSpinner,
         sizeChart,
+        LoadingButton,
     },
     data() {
         return {
@@ -364,7 +358,6 @@ export default {
             productInfor: [],
             ProductDetailImg: [],
             ProductDetail: [],
-            ProductDetails: [],
             sizes: [],
             colors: [],
             quantity: 1,
@@ -385,6 +378,7 @@ export default {
             isLoading: true,
             showModalSizeChart: false,
             cateName: null,
+            isLoadingButton: false,
         };
     },
 
@@ -449,42 +443,51 @@ export default {
             this.addToCart(true);
         },
         addToCart(redirectToCheckout = false) {
+            this.isLoadingButton = true;
             this.errorMessages = [];
-            axios
-                .post("/api/add-cart", {
-                    product_id: this.product_id,
-                    discount_id: this.discount_id,
-                    discountPercent: this.discountPercent,
-                    size: this.size,
-                    color: this.color,
-                    quantity: this.quantity,
-                })
-                .then((response) => {
-                    // console.log(response.data);
-                    if (response.data.success == true) {
-                        if (redirectToCheckout == true) {
-                            this.$router.push({ name: "Checkout" });
+            if (this.product.total_quantity > 0) {
+                axios
+                    .post("/api/add-cart", {
+                        product_id: this.product_id,
+                        discount_id: this.discount_id,
+                        discountPercent: this.discountPercent,
+                        size: this.size,
+                        color: this.color,
+                        quantity: this.quantity,
+                    })
+                    .then((response) => {
+                        // console.log(response.data);
+                        if (response.data.success == true) {
+                            if (redirectToCheckout == true) {
+                                this.$router.push({ name: "Checkout" });
+                            }
+                            const quantity = response.data.dataProduct.quantity;
+                            const color = response.data.dataProduct.color;
+                            const size = response.data.dataProduct.size;
+                            const image = response.data.dataProduct.imageURL;
+                            const name = response.data.dataProduct.name;
+                            this.showNotification(
+                                quantity,
+                                color,
+                                size,
+                                image,
+                                name
+                            );
+                            this.fetchCartQuantity();
+                            this.isLoadingButton = false;
+                        } else if (response.data.success == false) {
+                            this.errorMessages = response.data.error;
+                            this.isLoadingButton = false;
                         }
-                        const quantity = response.data.dataProduct.quantity;
-                        const color = response.data.dataProduct.color;
-                        const size = response.data.dataProduct.size;
-                        const image = response.data.dataProduct.imageURL;
-                        const name = response.data.dataProduct.name;
-                        this.showNotification(
-                            quantity,
-                            color,
-                            size,
-                            image,
-                            name
-                        );
-                        this.fetchCartQuantity();
-                    } else if (response.data.success == false) {
-                        this.errorMessages = response.data.error;
-                    }
-                })
-                .catch((error) => {
-                    this.errorMessages = [error];
-                });
+                    })
+                    .catch((error) => {
+                        this.isLoadingButton = false;
+                        this.errorMessages = [error];
+                    });
+            } else {
+                this.isLoadingButton = false;
+                this.errorMessages = ["This size is out of stock."];
+            }
         },
         async checkStock() {
             this.errorMessages = [];
@@ -505,7 +508,7 @@ export default {
                     this.stockQuantity = 0;
                 }
             } catch (error) {
-                console.error("Error checking stock:", error);
+                // console.error("Error checking stock:", error);
             }
         },
 
@@ -513,44 +516,36 @@ export default {
             axios
                 .get(`/api/product/view/${id}`)
                 .then((response) => {
-                    this.product = response.data.product;
-                    this.cateName = response.data.product.class;
-                   
-                    this.ProductDetailImg = response.data.ProductDetailImg;
-                    this.sizes = response.data.sizes;
-                    this.colors = response.data.colors;
-                    this.product_id = this.product.id;
-                    this.discount_id = this.product.discount_id;
-                    this.discountPercent = this.product.discount;
-                    this.size = null;
-                    this.color = null;
-                    this.ProductDetail = response.data.product_info;
-                    this.ProductDetails = response.data.productDetails;
-                    this.soldQuantity = this.product.sales_count;
-                    this.addToRecentlyViewed(response.data.product.id);
-                    this.checkStock();
-                    this.initializeSwiper();
-                    this.isLoading = false;
-
+                    // console.log(response.data);
+                    if (response.data.success == true) {
+                        this.product = response.data.product;
+                        this.cateName = response.data.product.class;
+                        this.ProductDetailImg = response.data.ProductDetailImg;
+                        this.sizes = response.data.sizes;
+                        this.colors = response.data.colors;
+                        this.product_id = this.product.id;
+                        this.discount_id = this.product.discount_id;
+                        this.discountPercent = this.product.discount;
+                        this.size = null;
+                        this.color = null;
+                        this.ProductDetail = response.data.product_info;
+                        this.soldQuantity = this.product.sales_count;
+                        this.addToRecentlyViewed(response.data.product.id);
+                        this.checkStock();
+                        this.initializeSwiper();
+                        this.isLoading = false;
+                    }
                     // window.scrollTo({ top: 0, behavior: "smooth" });
                 })
                 .catch((error) => {
                     this.isLoading = false;
-
-                    console.log(error);
+                    // console.log(error);
                 });
         },
         async addToRecentlyViewed(productId) {
             let formData = new FormData();
             formData.append("productId", productId);
-            axios
-                .post("/api/addToRecently", formData)
-                .then((response) => {
-                    //   console.log(response.data);
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
+            axios.post("/api/addToRecently", formData);
         },
         initializeSwiper() {
             if (this.swiper) {
@@ -571,3 +566,49 @@ export default {
     },
 };
 </script>
+<style>
+.modal-addcart {
+    display: none;
+    position: fixed;
+    z-index: 9999 !important;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.modal-content-addcart {
+    background-color: #fff;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px solid gray;
+    width: 80%;
+    max-width: 400px;
+    max-height: 80%;
+    overflow-y: auto;
+    width: 100%;
+    height: fit-content;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+}
+@media only screen and (max-width: 768px) {
+    .modal-content {
+        width: 90%;
+        top: 40%;
+        height: fit-content;
+    }
+
+    .modal-content-addcart {
+        width: 100%;
+        top: 30%;
+        height: fit-content;
+    }
+}
+</style>

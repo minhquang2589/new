@@ -1,5 +1,4 @@
 <template>
-    <LoadingSpinner :isLoading="isLoading" />
     <div>
         <div class="text-center mt-10">
             <h1 class="text-xl font-bold text-gray-900 sm:text-3xl">Payment</h1>
@@ -129,9 +128,6 @@
                             </div>
                         </div>
                     </div>
-                    <div
-                        class="flex my-1 justify-end border-t border-gray-300"
-                    ></div>
                     <div v-if="voucherCode && voucherCode > 0">
                         <span class="text-[12px] flex justify-between">
                             <dt class="inline">Voucher:</dt>
@@ -146,7 +142,15 @@
                             </dd>
                         </span>
                     </div>
-                    <form @submit.prevent="handleCheckout">
+                    <div>
+                        <span class="text-[12px] flex justify-between">
+                            <dt class="inline">Total items:</dt>
+                            <dd class="inline">
+                                {{cartQuantity}}
+                            </dd>
+                        </span>
+                    </div>
+                    <div>
                         <div class="mt-3 lg:mt-3">
                             <ul>
                                 <li class="text-xs mt-1 text-black">
@@ -167,32 +171,41 @@
                             </ul>
                         </div>
                         <div class="my-4 flex justify-center">
-                            <button
-                                type="submit"
-                                class="mr-1 text-sm rounded-xl text-white px-10 py-2 font-medium bg-gray-800 hover:bg-black"
-                            >
-                                Confirm
-                            </button>
-                            <a
-                                href="javascript:void(0);"
-                                onclick="window.history.back()"
-                                class="text-sm rounded-xl text-white px-12 py-2 font-medium bg-gray-800 hover:bg-black"
-                            >
-                                Back
-                            </a>
+                            <div>
+                                <LoadingButton :loading="isLoadingButton">
+                                    <button
+                                        @click="handleCheckout()"
+                                        type="button"
+                                        class="mr-1 text-sm rounded-xl text-white px-10 py-2 font-medium bg-gray-800 hover:bg-black"
+                                    >
+                                        Confirm
+                                    </button>
+                                </LoadingButton>
+                            </div>
+                            <div>
+                                <button
+                                    href="javascript:void(0);"
+                                    onclick="window.history.back()"
+                                    class="text-sm rounded-xl text-white px-12 py-2 font-medium bg-gray-800 hover:bg-black"
+                                >
+                                    Back
+                                </button>
+                            </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <LoadingSpinner :isLoading="isLoading" />
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from "vuex";
 import LoadingSpinner from "../layout/LoadingSpinner.vue";
+import LoadingButton from "../layout/LoadingButton.vue";
 export default {
     name: "Payment",
-    components: { LoadingSpinner },
+    components: { LoadingSpinner, LoadingButton },
     data() {
         return {
             cartCheckout: [],
@@ -211,14 +224,17 @@ export default {
             address: "",
             note: "",
             paymentMethod: "",
-            isLoading: false,
+            isLoading: true,
+            isLoadingButton: false,
         };
     },
     mounted() {
         axios
             .get("/api/checkout/payment")
             .then((response) => {
+                // console.log(response.data);
                 if (response.data.success == true) {
+                    this.isLoading = false;
                     this.cartCheckout = response.data.data.cartCheckout;
                     this.cartQuantity = response.data.data.cartQuantity;
                     this.checkoutSubtotal = response.data.data.checkoutSubtotal;
@@ -267,7 +283,7 @@ export default {
             }).format(value);
         },
         handleCheckout() {
-            this.isLoading = true;
+            this.isLoadingButton = true;
             axios
                 .post("/api/handle/checkout")
                 .then((response) => {
@@ -276,16 +292,16 @@ export default {
                         this.fetchCart();
                         this.fetchCartData();
                         this.fetchCartQuantity();
-                        this.isLoading = false;
+                        this.isLoadingButton = false;
                         this.$router.push({ name: "Confirm" });
                     }
                     if (response.data.success == false) {
-                        this.isLoading = false;
+                        this.isLoadingButton = false;
                         this.showNotification(response.data.error);
                     }
                 })
                 .catch((error) => {
-                    this.isLoading = false;
+                    this.isLoadingButton = false;
                     console.error(error);
                 });
         },

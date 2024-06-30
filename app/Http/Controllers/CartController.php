@@ -24,10 +24,9 @@ class CartController extends Controller
 
     public function cartView()
     {
-        // Redis::del('cart');
-        // Redis::del('dataCart');
-        $cart = json_decode(Redis::get('cart'), true);
-        $dataCart = json_decode(Redis::get('dataCart'), true);
+        $sessionId = Session::getId();
+        $cart = json_decode(Redis::get('cart_' . $sessionId), true);
+        $dataCart = json_decode(Redis::get('dataCart_' . $sessionId), true);
 
         if (count($cart) > 0 && count($dataCart) > 0) {
             return response()->json([
@@ -43,8 +42,10 @@ class CartController extends Controller
     }
     public function getCartView()
     {
-        $cart = json_decode(Redis::get('cart'), true);
-        $dataCart = json_decode(Redis::get('dataCart'), true);
+
+        $sessionId = Session::getId();
+        $cart = json_decode(Redis::get('cart_' . $sessionId), true);
+        $dataCart = json_decode(Redis::get('dataCart_' . $sessionId), true);
         if (count($cart) > 0) {
             return response()->json([
                 'success' => true,
@@ -61,17 +62,21 @@ class CartController extends Controller
     //
     public function addcart(Request $request)
     {
-
         $quantityInput = $request->quantity;
         $productId = $request->input('product_id');
         $discountId = $request->input('discount_id');
         $product = Product::find($productId);
         $img = Images::where('product_id', $productId)->first();
-        if (Redis::exists('cart')) {
-            $cart = json_decode(Redis::get('cart'), true);
+
+        $cartKey = 'cart_' . Session::getId();
+        $dataCartKey = 'dataCart_' . Session::getId();
+
+        if (Redis::exists($cartKey)) {
+            $cart = json_decode(Redis::get($cartKey), true);
         } else {
             $cart = [];
         }
+
         if ($img) {
             $imageUrl = $img->image;
         } else {
@@ -222,8 +227,9 @@ class CartController extends Controller
             'size' => $size,
             'name' => $product->name,
         ];
-        Redis::set('cart', json_encode($cart));
-        Redis::set('dataCart', json_encode($dataCart));
+        $expiryTime = 1296000; // 15 days
+        Redis::set($cartKey, json_encode($cart), 'EX', $expiryTime);
+        Redis::set($dataCartKey, json_encode($dataCart), 'EX', $expiryTime);
         return response()->json([
             'success' => true,
             'message' => ['Add cart successfully'],
@@ -234,14 +240,17 @@ class CartController extends Controller
 
     public function removeItem($id, $size, $color, $quantity)
     {
-        $cart = json_decode(Redis::get('cart'), true);
-        $dataCart = json_decode(Redis::get('dataCart'), true);
+        $sessionId = Session::getId();
+        $cart = json_decode(Redis::get('cart_' . $sessionId), true);
+        $dataCart = json_decode(Redis::get('dataCart_' . $sessionId), true);
+
         foreach ($cart as $key => $item) {
             if ($item['id'] == $id) {
                 if ((!$size || (isset($item['size']) && $item['size'] == $size)) && (!$color || $item['color'] == $color)) {
                     if (!$quantity || ($quantity == $item['quantity'])) {
                         unset($cart[$key]);
-                        Redis::set('cart', json_encode($cart));
+                        $expiryTime = 1296000; // 15 days
+                        Redis::set('cart_' . $sessionId, json_encode($cart), 'EX', $expiryTime);
                         $subtotal = 0;
                         $totalWithoutVat = 0;
                         $total = 0;
@@ -299,8 +308,8 @@ class CartController extends Controller
                             'vat' => $vat,
                             'cartQuantity' => $cartQuantity,
                         ];
-                        Redis::set('cart', json_encode($cart));
-                        Redis::set('dataCart', json_encode($dataCart));
+                        Redis::set('cart_' . $sessionId, json_encode($cart), 'EX', $expiryTime);
+                        Redis::set('dataCart_' . $sessionId, json_encode($dataCart), 'EX', $expiryTime);
                         return response()->json([
                             'success' => true,
                             'message' => [' Removed successfully.'],
@@ -324,14 +333,18 @@ class CartController extends Controller
         $productId = $request->input('product_id');
         $size = $request->input('size');
         $color = $request->input('color');
-        $cart = json_decode(Redis::get('cart'), true);
-        $dataCart = json_decode(Redis::get('dataCart'), true);
+
+        $cartKey = 'cart_' . Session::getId();
+        $dataCartKey = 'dataCart_' . Session::getId();
+        $cart = json_decode(Redis::get($cartKey), true);
+        $dataCart = json_decode(Redis::get($dataCartKey), true);
         foreach ($cart as $key => $item) {
             if ($item['id'] == $productId) {
                 if ((!$size || (isset($item['size']) && $item['size'] == $size)) && (!$color || $item['color'] == $color)) {
                     if (!$request->has('quantity') || ($request->input('quantity') == $item['quantity'])) {
                         unset($cart[$key]);
-                        Redis::set('cart', json_encode($cart));
+                        $expiryTime = 1296000; // 15 days
+                        Redis::set($cartKey, json_encode($cart), 'EX', $expiryTime);
                         $subtotal = 0;
                         $totalWithoutVat = 0;
                         $total = 0;
@@ -389,8 +402,8 @@ class CartController extends Controller
                             'vat' => $vat,
                             'cartQuantity' => $cartQuantity,
                         ];
-                        Redis::set('cart', json_encode($cart));
-                        Redis::set('dataCart', json_encode($dataCart));
+                        Redis::set($cartKey, json_encode($cart), 'EX', $expiryTime);
+                        Redis::set($dataCartKey, json_encode($dataCart), 'EX', $expiryTime);
                         return response()->json(['success' => 'Product removed from view cart successfully.', 'cart' => $cart]);
                     } else {
                         return response()->json(['error' => 'removed from view cart fail.']);
@@ -398,7 +411,7 @@ class CartController extends Controller
                 }
             }
         }
-        return redirect()->back()->with('error', 'Product not found in cart.');
+        return response()->json(['error' => true]);
     }
 
     // ///////////////////////////// product_variants  /////////////////////////////////////////////
@@ -409,7 +422,9 @@ class CartController extends Controller
         $color = $request->input('color');
         $size = $request->input('size');
 
-        $cart = json_decode(Redis::get('cart'), true);
+        $cartKey = 'cart_' . Session::getId();
+        $cart = json_decode(Redis::get($cartKey), true);
+
         if (empty($cart)) {
             return response()->json(['success' => false, 'message' => ['Cart is empty.']]);
         }
@@ -436,22 +451,9 @@ class CartController extends Controller
         }
         foreach ($cart as $key => $item) {
             if ($item['id'] == $id && $item['color'] == $color && $item['size'] == $size) {
-
-                if (!$productVariant) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => ['error!'],
-                    ]);
-                }
-                $availableQuantity = $productVariant->quantity;
-                if ($newQuantity > $availableQuantity) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => ['error!'],
-                    ]);
-                }
                 $cart[$key]['quantity'] = $newQuantity;
-                Redis::set('cart', json_encode($cart));
+                $expiryTime = 1296000; // 15 days
+                Redis::set($cartKey, json_encode($cart), 'EX', $expiryTime);
                 return response()->json([
                     'success' => true,
                     'message' => ['Quantity update successfully!']
@@ -464,7 +466,8 @@ class CartController extends Controller
     /////////////////////
     public function getCartQuantity()
     {
-        $cart = json_decode(Redis::get('cart'), true);
+        $cartKey = 'cart_' . Session::getId();
+        $cart = json_decode(Redis::get($cartKey), true);
         if ($cart) {
             $cartQuantity = count($cart);
         } else {
@@ -475,7 +478,8 @@ class CartController extends Controller
     ///
     public function SubtotalTotal(Request $request)
     {
-        $cart = json_decode(Redis::get('cart'), true);
+        $cartKey = 'cart_' . Session::getId();
+        $cart = json_decode(Redis::get($cartKey), true);
         $subtotal = 0;
         $totalWithoutVat = 0;
         $total = 0;
@@ -527,16 +531,7 @@ class CartController extends Controller
                     }
                 }
             }
-        } else {
-            $subtotal = 0;
-            $totalWithoutVat = 0;
-            $total = 0;
-            $vatRate = 0;
-            $totalDiscountAmount = 0;
-            $totalOriginalPrice = 0;
-            $cartQuantity = 0;
         }
-
         $vat = $subtotal * $vatRate;
         $total = $totalWithoutVat + $vat;
 

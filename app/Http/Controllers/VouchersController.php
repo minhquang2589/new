@@ -13,7 +13,6 @@ use App\Models\Size;
 use App\Models\ProductVariant;
 use App\Models\Discounts;
 use Illuminate\Support\Facades\Auth;
-use App\Models\ProductDetails;
 use App\Models\ProductCates;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Session;
@@ -136,8 +135,8 @@ class VouchersController extends Controller
         if ($voucher) {
             $VoucherValue = $voucher->discount_value;
             if ($VoucherValue > 0) {
-                $cart = json_decode(Redis::get('cart'), true);
-                $dataCart = json_decode(Redis::get('dataCart'), true);
+                $sessionId = Session::getId();
+                $cart = json_decode(Redis::get('cart_' . $sessionId), true);
                 $subtotal = 0;
                 $totalWithoutVat = 0;
                 $vatRate = 0;
@@ -203,8 +202,9 @@ class VouchersController extends Controller
                     'cartQuantity' => $cartQuantity,
                     'totalDiscountAmount' => $totalDiscountAmount,
                 ];
-                Redis::set('cart', json_encode($cart));
-                Redis::set('dataInVoucher', json_encode($dataInVoucher));
+                $expiryTime = 1296000; // 15 days
+                Redis::set('cart_' . $sessionId, json_encode($cart), 'EX', $expiryTime);
+                Redis::set('dataInVoucher_' . $sessionId, json_encode($dataInVoucher), 'EX', 1800);
                 return response()->json([
                     'success' => true,
                     'dataInVoucher' => $dataInVoucher,
@@ -220,8 +220,8 @@ class VouchersController extends Controller
     }
     public function handleRemoveVoucher(Request $request)
     {
-        $cart = json_decode(Redis::get('cart'), true);
-        $dataCart = json_decode(Redis::get('dataCart'), true);
+        $sessionId = Session::getId();
+        $cart = json_decode(Redis::get('cart_' . $sessionId), true);
         $subtotal = 0;
         $totalWithoutVat = 0;
         $vatRate = 0;
@@ -281,10 +281,11 @@ class VouchersController extends Controller
             'cartQuantity' => $cartQuantity,
             'totalDiscountAmount' => $totalDiscountAmount,
         ];
-      
-        Redis::set('cart', json_encode($cart));
-        Redis::set('dataInVoucher', json_encode($dataInVoucher));
-
+        $expiryTime = 1296000; // 15 days
+        Redis::set('cart_' . $sessionId, json_encode($cart), 'EX', $expiryTime);
+        Redis::del([
+            'dataInVoucher_' . $sessionId,
+        ]);
         return response()->json([
             'success' => true,
             'message' => 'Voucher removed successfully',

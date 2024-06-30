@@ -12,7 +12,6 @@ use App\Models\product_variants;
 use App\Models\Size;
 use App\Models\Color;
 use App\Models\ProductCates;
-use App\Models\ProductDetails;
 use App\Models\Images;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;

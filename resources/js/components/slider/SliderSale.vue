@@ -45,7 +45,10 @@
                         <router-link
                             :to="{
                                 name: 'ViewProduct',
-                                params: { id: slider.id },
+                                params: {
+                                    id: slider.id,
+                                    productName: slider.name,
+                                },
                             }"
                         >
                             <img

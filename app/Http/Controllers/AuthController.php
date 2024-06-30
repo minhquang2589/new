@@ -8,7 +8,6 @@ use App\Models\Product;
 use App\Models\TestImage;
 use App\Models\size;
 use App\Models\Images;
-use App\Models\ProductDetails;
 use App\Models\ProductCates;
 use App\Models\Discounts;
 use App\Models\color;
@@ -35,6 +34,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'product_name' => 'required|string',
             'price' => 'required',
+            'description' => 'required',
             'gender' => 'required',
             'class' => 'required',
             'colors.*' => 'required',
@@ -78,15 +78,6 @@ class AuthController extends Controller
             $product->cate_id = $ProductCates->id;
             $product->is_new = $request->is_new;
             $product->save();
-
-            if ($request->details) {
-                foreach ($request->details as $detail) {
-                    $productDetails = new ProductDetails();
-                    $productDetails->product_id =  $product->id;
-                    $productDetails->description = $detail;
-                    $productDetails->save();
-                }
-            }
 
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
@@ -165,7 +156,7 @@ class AuthController extends Controller
             DB::rollback();
             return response()->json([
                 'success' => false,
-                'error' => ['An error occurred while uploading the product.'],
+                'error' => [$e->getMessage()],
             ]);
         }
     }

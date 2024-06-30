@@ -1,5 +1,8 @@
 <template>
-    <div v-if="$route.meta.showSlider && dataSlider != null" class="swiper-container swiper">
+    <div
+        v-if="$route.meta.showSlider && dataSlider.length > 0"
+        class="swiper-container swiper mt-2 lg:mt-10"
+    >
         <div class="slider_1">
             <div class="swiper_1 mySwiper_1">
                 <div class="swiper-wrapper">

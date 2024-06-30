@@ -35,9 +35,11 @@ class CheckoutController extends Controller
     //
     public function checkoutView(Request $request)
     {
-        $cart = json_decode(Redis::get('cart'), true);
-        $dataCart = json_decode(Redis::get('dataCart'), true);
-        $dataInVoucher = json_decode(Redis::get('dataInVoucher'), true);
+        $sessionId = Session::getId();
+        $cart = json_decode(Redis::get('cart_' . $sessionId), true);
+        $dataCart = json_decode(Redis::get('dataCart_' . $sessionId), true);
+
+        $dataInVoucher = json_decode(Redis::get('dataInVoucher_' . $sessionId), true);
 
         if (!$cart) {
             return response()->json([
@@ -127,10 +129,11 @@ class CheckoutController extends Controller
             'checkoutSubtotal' => $subtotal,
             'VoucherValue' => $VoucherValue ?? null,
             'totalDiscountAmount' => $totalDiscountAmount ?? null,
-            'cartCheckout' => $cart,
             'cartQuantity' => $cartQuantity,
         ];
-        Redis::set('DETACheckout', json_encode($DETACheckout));
+        $expiryTime = 1296000; // 15 days
+        $DETACheckoutkey = 'DETACheckout_' . Session::getId();
+        Redis::set($DETACheckoutkey, json_encode($DETACheckout), 'EX', $expiryTime);
         return response()->json([
             'success' => true,
             'DETACheckout' => $DETACheckout,
@@ -140,8 +143,10 @@ class CheckoutController extends Controller
     /////
     public function process(Request $request)
     {
-        $DETACheckout = json_decode(Redis::get('DETACheckout'), true);
-        $cart = json_decode(Redis::get('cart'), true);
+
+        $sessionId = Session::getId();
+        $DETACheckout = json_decode(Redis::get('DETACheckout_' . $sessionId), true);
+        $cart = json_decode(Redis::get('cart_' . $sessionId), true);
         if (!$DETACheckout || !$cart) {
             return response()->json([
                 'success' => false,
@@ -197,7 +202,9 @@ class CheckoutController extends Controller
             'subtotal' => $DETACheckout['checkoutSubtotal'],
             'total' => $DETACheckout['checkoutTotal'],
         ];
-        Redis::set('element', json_encode($element));
+        $expiryTime = 1296000; // 15 days
+        Redis::set('elementKey_' . $sessionId, json_encode($element), 'EX', $expiryTime);
+
         return response()->json([
             'success' => true,
             'data' => $dataCheckout,
@@ -208,7 +215,7 @@ class CheckoutController extends Controller
     {
         function generateOrderNumber()
         {
-            if (!Redis::get('orderNumber')) {
+            if (!Redis::get('orderNumber_' . Session::getId())) {
                 $unique = false;
                 $randomDigits = '';
                 while (!$unique) {
@@ -218,10 +225,10 @@ class CheckoutController extends Controller
                         $unique = true;
                     }
                 }
-                Redis::set('orderNumber', json_encode($randomDigits));
+                Redis::set('orderNumber_' . Session::getId(), json_encode($randomDigits), 'EX', 3600);
                 return $randomDigits;
             } else {
-                return  json_decode(Redis::get('orderNumber'), true);
+                return  json_decode(Redis::get('orderNumber_' . Session::getId()), true);
             }
         }
         function getTime()
@@ -232,9 +239,10 @@ class CheckoutController extends Controller
 
         $time = getTime();
         $orderNumber = generateOrderNumber();
-        $cart = json_decode(Redis::get('cart'), true);
-        $element = json_decode(Redis::get('element'), true);
-        $DETACheckout = json_decode(Redis::get('DETACheckout'), true);
+        $sessionId = Session::getId();
+        $cart = json_decode(Redis::get('cart_' . $sessionId), true);
+        $element = json_decode(Redis::get('elementKey_' . $sessionId), true);
+        $DETACheckout = json_decode(Redis::get('DETACheckout_' . $sessionId), true);
         if (
             !$orderNumber
             ||  !$cart
@@ -246,8 +254,7 @@ class CheckoutController extends Controller
                 'payment' => false,
             ]);
         }
-        Redis::set('time', json_encode($time));
-
+        Redis::set('time', json_encode($time), 'EX', 1800);
         return response()->json([
             'success' => true,
             'data' => $DETACheckout,
@@ -261,13 +268,15 @@ class CheckoutController extends Controller
     public function handlecheckout(Request $request)
     {
         try {
-            DB::beginTransaction();
-            $time = json_decode(Redis::get('time'), true);
-            $cart = json_decode(Redis::get('cart'), true);
-            $orderNumber = json_decode(Redis::get('orderNumber'), true);
-            $element = json_decode(Redis::get('element'), true);
-            $DETACheckout = json_decode(Redis::get('DETACheckout'), true);
+            $sessionId = Session::getId();
 
+            $time = json_decode(Redis::get('time'), true);
+            $orderNumber = json_decode(Redis::get('orderNumber_' . $sessionId), true);
+            $cart = json_decode(Redis::get('cart_' . $sessionId), true);
+            $element = json_decode(Redis::get('elementKey_' . $sessionId), true);
+            $DETACheckout = json_decode(Redis::get('DETACheckout_' . $sessionId), true);
+
+            DB::beginTransaction();
             if ($cart) {
                 $voucherCode = $DETACheckout['voucherCode'];
                 if ($voucherCode) {
@@ -350,7 +359,7 @@ class CheckoutController extends Controller
 
             $payment = Payment::firstOrCreate(['name' => $element['payment']]);
             $ordernumber = ordernumber::create(['order_number' => $orderNumber]);
-         
+
 
             $status = $this->getOrderStatus($element['payment']);
 
@@ -388,7 +397,7 @@ class CheckoutController extends Controller
             $emailController = new EmailController();
             $emailController->sendMail($orderDate, $element, $orderNumber, $cart, $DETACheckout);
             $this->checkoutSuccess($cart, $DETACheckout);
-            $this->clearCacheData();
+            $this->clearCacheData($sessionId);
             return response()->json([
                 'success' => true,
                 'message' => ['Checkout successfully.'],
@@ -406,11 +415,12 @@ class CheckoutController extends Controller
     {
         try {
             DB::beginTransaction();
+            $sessionId = Session::getId();
             $time = json_decode(Redis::get('time'), true);
-            $cart = json_decode(Redis::get('cart'), true);
-            $orderNumber = json_decode(Redis::get('orderNumber'), true);
-            $element = json_decode(Redis::get('element'), true);
-            $DETACheckout = json_decode(Redis::get('DETACheckout'), true);
+            $orderNumber = json_decode(Redis::get('orderNumber_' . $sessionId), true);
+            $cart = json_decode(Redis::get('cart_' . $sessionId), true);
+            $element = json_decode(Redis::get('elementKey_' . $sessionId), true);
+            $DETACheckout = json_decode(Redis::get('DETACheckout_' . $sessionId), true);
 
             if ($cart) {
                 $voucherCode = $DETACheckout['voucherCode'];
@@ -683,12 +693,17 @@ class CheckoutController extends Controller
         }
     }
 
-    protected function clearCacheData()
+    protected function clearCacheData($sessionId)
     {
         Redis::del([
-            'cart', 'time', 'data', 'subtotal', 'voucherCode', 'aruvoucher',
-            'DETACheckout', 'element', 'dataCart', 'total', 'voucherDiscountPercent',
-            'cartQuantity', 'orderNumber'
+            'cart_' . $sessionId,
+            'DETACheckout_' . $sessionId,
+            'time',
+            'elementKey_' . $sessionId,
+            'dataCart_' . $sessionId,
+            'orderNumber_' . $sessionId,
+            'dataInVoucher_' . $sessionId,
+
         ]);
     }
 }

@@ -28,7 +28,7 @@
                         <div
                             class="group rounded-xl relative block overflow-hidden"
                         >
-                            <div @click="viewProduct(product.id)">
+                            <div @click="viewProduct(product.id, product.name)">
                                 <img
                                     :src="`/images/${product.image1}`"
                                     :alt="product.name"
@@ -73,7 +73,12 @@
                                     </div>
                                     <div
                                         class="text-xs my-2 hover:cursor-pointer"
-                                        @click="viewProduct(product.id)"
+                                        @click="
+                                            viewProduct(
+                                                product.id,
+                                                product.name
+                                            )
+                                        "
                                     >
                                         <p
                                             class="inline-block rounded-xl hover:border-red-500 border border-gray-400 text-gray-700 lg:px-3.5 px-2.5 py-1 text-sm font-medium transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring"
@@ -110,7 +115,7 @@
             </button>
         </div>
         <div v-else class="flex mt-2 w-full items-center justify-center">
-            <span class="text-gray-800 text-xs lg:text-sm"> End </span>
+            <span class="text-gray-800 text-xs lg:text-sm"> end </span>
         </div>
     </div>
 
@@ -143,12 +148,11 @@ export default {
             products: [],
             displayedProducts: [],
             page: 1,
-            perPage: 36,
             hasMore: true,
             filters: {},
             showModal: false,
             productId: null,
-            isLoading: false,
+            isLoading: true,
         };
     },
     mounted() {
@@ -159,10 +163,11 @@ export default {
         window.removeEventListener("scroll", this.handleScroll);
     },
     methods: {
-        viewProduct(productId) {
+        viewProduct(id, name) {
+            const productName = name.replace(/\s+/g, "-").toLowerCase();
             this.$router.push({
                 name: "ViewProduct",
-                params: { id: productId },
+                params: { id: id, productName: productName },
             });
         },
         closeModal() {
@@ -174,20 +179,18 @@ export default {
             this.showModal = true;
         },
         async fetchData() {
-            this.isLoading = true;
             try {
                 const response = await axios.get(
                     `/api/product/bags?page=${this.page}`
                 );
                 // console.log(response.data);
                 if (response.data.success == true) {
-                    this.isLoading = false;
-                    const newProducts = response.data.productViews;
-                    if (newProducts.length < this.perPage) {
-                        this.hasMore = false;
-                    }
-                    this.products = this.products.concat(newProducts);
+                    this.hasMore = response.data.hasMore;
+                    this.products = this.products.concat(
+                        response.data.productViews
+                    );
                     this.applyFilters();
+                    this.isLoading = false;
                 } else {
                     this.isLoading = true;
                 }
